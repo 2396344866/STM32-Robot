@@ -86,8 +86,6 @@ void start_task(void *pvParameters){
     }
     // 初始化总线，清空订阅表
     event_bus_init();
-		
-		
 		// --- B. 中断硬件初始化(硬件上电死机大概率就是提前开启中断 中断触发导致)---
     // 必须在 xKeyLogicQueue 创建成功  后调用，否则中断中写队列会 HardFault
 		KEY_Init();
@@ -104,9 +102,6 @@ void start_task(void *pvParameters){
 		printf("BSP_OLED_Init\n");
 		BSP_MPU6050_Init(); 
 		printf("BSP_MPU6050_Init\n");
-		
-		
-		
     // --- C. 创建业务任务 ---
     // 电机任务
     xTaskCreate((TaskFunction_t )Motor_FSM_task,

@@ -1,16 +1,50 @@
-# Auto detect text files and perform LF normalization
+# 1. 自动检测文本文件，并进行换行符规范化
 * text=auto
 
-# 源代码文件强制使用 LF（方便跨平台协作）
+# 2. 源代码文件：强制使用 LF（方便跨平台协作）
 *.c text eol=lf
 *.h text eol=lf
 *.s text eol=lf
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.inc text eol=lf
 
-# Keil 工程等二进制文件，不要转换！
+# 3. 汇编文件、链接脚本
+*.s text eol=lf
+*.ld text eol=lf
+*.scat text eol=lf
+
+# 4. Keil 工程核心文件：二进制，禁止转换
 *.uvprojx binary
 *.uvoptx binary
-*.uvgui.* binary
 *.uvmpw binary
-*.bin binary
-*.hex binary
+*.uvgui.* binary
+*.uvguix.* binary
+*.uvprojx.* binary
+*.uvoptx.* binary
+
+# 5. Keil 生成的其他中间文件（二进制，禁止转换）
 *.o binary
+*.d binary
+*.crf binary
+*.dep binary
+*.lnp binary
+*.depend binary
+*.map binary
+*.htm binary
+*.hex binary
+*.bin binary
+
+# 6. 其他可能丢失格式的文件
+*.jpg binary
+*.png binary
+*.bmp binary
+*.pdf binary
+*.doc binary
+*.docx binary
+*.xls binary
+*.xlsx binary
+
+# 7. 编译器输出文件（二进制，禁止转换）
+*.axf binary
+*.elf binary

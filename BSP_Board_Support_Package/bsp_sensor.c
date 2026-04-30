@@ -121,3 +121,35 @@ float BSP_Sensor_GetSmoke(void) {
 uint8_t BSP_Sensor_ReadDHT11(uint8_t *temp, uint8_t *humi) {
     return Dev_DHT11_Read(&hDht11, temp, humi);
 }
+
+
+// --- 低功耗管理接口 ---
+
+void BSP_Sensors_Sleep(void) {
+    // 1. 关闭 ADC1 转换，停止模拟电路耗电
+    ADC_Cmd(ADC1, DISABLE);
+    
+    // 2. 关闭超声波定时器 TIM1
+    TIM_Cmd(TIM1, DISABLE);
+    
+    // DHT11 是单总线轮询器件，不轮询即不耗电，无需额外处理。
+    // MQ2 与光照传感器的分压电路若有外部 MOSFET 控制最佳；若无，仅关闭 ADC 也能省下芯片内部功耗。
+}
+
+void BSP_Sensors_Wakeup(void) {
+    // 1. 重新开启 ADC1
+    ADC_Cmd(ADC1, ENABLE);
+    
+    // 工业规范：从断电恢复的 ADC 需要重新校准
+    ADC_ResetCalibration(ADC1);
+    while(ADC_GetResetCalibrationStatus(ADC1));
+    ADC_StartCalibration(ADC1);
+    while(ADC_GetCalibrationStatus(ADC1));
+    
+    // 重新触发 ADC_DMA 连续转换
+    ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+    
+    // 2. 重新开启超声波定时器
+    TIM_Cmd(TIM1, ENABLE);
+}
+
