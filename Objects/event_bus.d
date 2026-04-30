@@ -1,0 +1,17 @@
+.\objects\event_bus.o: FSM\event_bus.c
+.\objects\event_bus.o: FSM\event_bus.h
+.\objects\event_bus.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\event_bus.o: FSM\fsm_core.h
+.\objects\event_bus.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\event_bus.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\event_bus.o: FSM\sys_config.h
+.\objects\event_bus.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\event_bus.o: .\FreeRTOS\include\FreeRTOS.h
+.\objects\event_bus.o: .\User\FreeRTOSConfig.h
+.\objects\event_bus.o: .\FreeRTOS\include\projdefs.h
+.\objects\event_bus.o: .\FreeRTOS\include\portable.h
+.\objects\event_bus.o: .\FreeRTOS\include\deprecated_definitions.h
+.\objects\event_bus.o: .\FreeRTOS\portable\ARM_CM3\portmacro.h
+.\objects\event_bus.o: .\FreeRTOS\include\mpu_wrappers.h
+.\objects\event_bus.o: .\FreeRTOS\include\task.h
+.\objects\event_bus.o: .\FreeRTOS\include\list.h

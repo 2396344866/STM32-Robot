@@ -1,0 +1,16 @@
+.\objects\fsm_core.o: FSM\fsm_core.c
+.\objects\fsm_core.o: FSM\fsm_core.h
+.\objects\fsm_core.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\fsm_core.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\fsm_core.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\fsm_core.o: FSM\sys_config.h
+.\objects\fsm_core.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\fsm_core.o: .\FreeRTOS\include\FreeRTOS.h
+.\objects\fsm_core.o: .\User\FreeRTOSConfig.h
+.\objects\fsm_core.o: .\FreeRTOS\include\projdefs.h
+.\objects\fsm_core.o: .\FreeRTOS\include\portable.h
+.\objects\fsm_core.o: .\FreeRTOS\include\deprecated_definitions.h
+.\objects\fsm_core.o: .\FreeRTOS\portable\ARM_CM3\portmacro.h
+.\objects\fsm_core.o: .\FreeRTOS\include\mpu_wrappers.h
+.\objects\fsm_core.o: .\FreeRTOS\include\task.h
+.\objects\fsm_core.o: .\FreeRTOS\include\list.h

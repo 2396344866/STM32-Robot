@@ -1,0 +1,11 @@
+.\objects\inv_mpu_dmp_motion_driver.o: Motion_driver\inv_mpu_dmp_motion_driver.c
+.\objects\inv_mpu_dmp_motion_driver.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\inv_mpu_dmp_motion_driver.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\inv_mpu_dmp_motion_driver.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\inv_mpu_dmp_motion_driver.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\inv_mpu_dmp_motion_driver.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+.\objects\inv_mpu_dmp_motion_driver.o: Motion_driver\inv_mpu.h
+.\objects\inv_mpu_dmp_motion_driver.o: Motion_driver\inv_mpu_dmp_motion_driver.h
+.\objects\inv_mpu_dmp_motion_driver.o: Motion_driver\dmpKey.h
+.\objects\inv_mpu_dmp_motion_driver.o: Motion_driver\dmpmap.h
+.\objects\inv_mpu_dmp_motion_driver.o: .\DD_Device_Driver\dev_mpu6050.h

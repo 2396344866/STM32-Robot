@@ -1,0 +1,10 @@
+.\objects\inv_mpu.o: Motion_driver\inv_mpu.c
+.\objects\inv_mpu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\inv_mpu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\inv_mpu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\inv_mpu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\inv_mpu.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+.\objects\inv_mpu.o: Motion_driver\inv_mpu.h
+.\objects\inv_mpu.o: Motion_driver\inv_mpu_dmp_motion_driver.h
+.\objects\inv_mpu.o: .\BSP_Board_Support_Package\bsp_mpu6050.h
+.\objects\inv_mpu.o: .\DD_Device_Driver\dev_mpu6050.h
