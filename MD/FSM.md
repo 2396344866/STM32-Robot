@@ -8,7 +8,7 @@
 - **电机控制**：驱动 8 路舵机执行步态序列，并采集 IMU 数据。
 - **网络通信**：通过 ESP8266 + MQTT 连接阿里云 IoT，收发控制指令及传感器数据。
 - **按键扫描**：基于 FreeRTOS 定时器的按键消抖与状态机，产生短按 / 长按事件。
-- **环境传感**：非阻塞轮询超声波、DHT11 与烟雾传感器，触发安全拦截。
+- **环境传感**：根据网络状态动态休眠/唤醒，非阻塞轮询超声波、DHT11 与烟雾传感器，触发安全拦截。
 
 
 四个状态机通过**事件总线**相互通信，结构图如下：
@@ -20,7 +20,7 @@ graph TD
         MT -- 订阅/发布 --> BUS[事件总线 event_bus]
         MOT[Motor_FSM] -- 订阅/发布 --> BUS
         NET[Network_FSM] -- 订阅/发布 --> BUS
-        SENS[Sensor_FSM] -- 发布 --> BUS
+        SENS[Sensor_FSM] -- 订阅/发布 --> BUS
     end
     KEY_Timer[KeyScan定时器] -->|推送按键事件| KEY_Q
     SENS -- 数据就绪/避障警告 --> BUS
@@ -262,16 +262,34 @@ stateDiagram-v2
 ### 3.5 传感器状态机 (`fsm_sensor`)
 
 **文件：** `fsm_sensor.c/h`  
-**任务：** `Sensor_FSM_Task`，优先级最低（空闲时运行），周期 100ms。
+**任务：** `Sensor_FSM_Task`，动态周期（ACTIVE 态 100ms，SLEEP 态 500ms）。
 
-**状态定义：** 单一轮询状态，无复杂状态迁移。完全依靠 `on_poll` 驱动。
+**状态定义：**
+
+| 状态 | 含义 |
+|------|------|
+| `STATE_SENS_SLEEP` | 休眠模式，硬件暂停，等待网络上线 |
+| `STATE_SENS_ACTIVE` | 活跃采集模式，硬件运行，轮询传感器 |
+
+**状态流转图：**
+
+```mermaid
+stateDiagram-v2
+    [*] --> STATE_SENS_SLEEP
+    STATE_SENS_SLEEP --> STATE_SENS_ACTIVE : EVT_NET_STATUS_ONLINE
+    STATE_SENS_ACTIVE --> STATE_SENS_SLEEP : EVT_NET_STATUS_ERROR
+    STATE_SENS_ACTIVE --> STATE_SENS_SLEEP : EVT_NET_STATUS_INIT
+```
 
 **主要功能：**
-- **非阻塞采集**：聚合超声波（中断输入捕获）、烟雾（ADC+DMA 后台）与 DHT11（容错延时）的数据。
+- **状态切换**：根据网络状态自动休眠/唤醒硬件传感器，节省功耗。
+- **非阻塞采集**：聚合超声波、烟雾（ADC）与 DHT11 的数据，仅在 ACTIVE 状态下执行。
 - **数据共享**：维护全局结构体 `g_sensor_data` 供网络状态机定时读取与上报。
-- **硬件级抢占与容错**：允许 DHT11 采集过程被高优先级中断打断。通过 Checksum 校验失败后主动丢弃重试，保障系统整体实时性。
-- **避障裁决**：当距离 `< 15cm` 时，立即向总线发布 `EVT_WARN_OBSTACLE` 事件。
-- **避障裁决**：当距离 `< 15cm` 时，立即向总线发布 `EVT_WARN_OBSTACLE` 事件（带有 2cm 物理迟滞，距离 `>= 17cm` 才发布 `EVT_OBSTACLE_CLEARED` 解除避障）。
+- **避障裁决**：当距离在 `(2cm, 15cm)` 区间时，发布 `EVT_WARN_OBSTACLE`；当距离恢复至 `≥17cm` 时，发布 `EVT_OBSTACLE_CLEARED`。带有 2cm 物理迟滞，避免临界抖动。
+- **DHT11 降频读取**：每 20 次轮询（约 2 秒）才读取一次温湿度，减少硬件抢占开销。
+
+
+---
 
 
 ## 4. 事件流与订阅关系总览
@@ -287,6 +305,9 @@ stateDiagram-v2
 | `EVT_TIMEOUT` | 主系统内部 (IdleTimeoutTimer) | Main_System 自身 | 10秒无操作切至待机 |
 | `EVT_KEY*_PRESS` | 按键扫描 | Main_System | K1/K2 长短按用于菜单和启停 |
 | `EVT_WARN_OBSTACLE/EVT_OBSTACLE_CLEARED` | Sensor | Main_System | 避障安全锁的触发和解除 |
+| `EVT_NET_STATUS_INIT` | Network | Sensor | 网络复位时通知传感器进入休眠 |
+| `EVT_NET_STATUS_ERROR` | Network | Sensor | 网络异常时通知传感器进入休眠 |
+
 
 **发布方式：**
 - 按键事件通过 **FreeRTOS 队列** `xKeyLogicQueue` 传递给 Main_System 任务。
@@ -303,7 +324,8 @@ stateDiagram-v2
 | `Motor_FSM_task` | RTOS 任务 | 20ms 周期 |
 | `IdleTimeoutTimer` | 单次定时器 | Main_System 中 10 秒超时进入待机 |
 | `Network_FSM_Task` | RTOS 任务 | 事件驱动 + 50ms 轮询超时（ `xQueueReceive` 非阻塞） |
-| `Sensor_FSM_Task` | RTOS 任务 | 100ms 周期 ( `vTaskDelay` 挂起) |
+| `Sensor_FSM_Task` | RTOS 任务 | 动态周期（ACTIVE 态 100ms，SLEEP 态 500ms） |
+
 ---
 
 ## 6. 调试与日志系统
