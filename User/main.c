@@ -96,6 +96,7 @@ void start_task(void *pvParameters){
 				printf("BSP_DebugUART_Init Complete\n");
 		#endif
 		BSP_Servo_Init();           /* 运行模式：只初始化舵机 */
+		printf("BSP_Servo_Init Complete\n");
 		BSP_ESP8266_Init(115200);
     printf("BSP_ESP8266_Init Complete\n");
 		BSP_OLED_Init();
