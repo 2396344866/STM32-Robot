@@ -100,12 +100,9 @@ uint32_t HAL_TIM1_CH4_GetPulseWidth(void); // 获取最新测量的脉宽(us)
 void HAL_ADC_DMA_Init(ADC_DMA_Handle_t* handle);
 ```
 - 固定使用 ADC1，DMA1 通道1，循环模式。
-- 句柄中需指定 GPIO、通道、以及用于存放结果的 uint16_t* DMABuffer。
-- 初始化完成后自动开始连续转换，无需再调用启动函数。
-- 固定使用 ADC1，DMA1 通道1，循环模式。
-- 句柄中需指定 GPIO 引脚掩码（支持多引脚或运算）、通道数组指针 ADC_Channels、通道数 ChannelCount、以及用于存放结果的 uint16_t* DMABuffer（长度需 ≥ ChannelCount）。
-- 多通道时自动开启扫描模式，数据按 Rank 顺序写入 DMA 缓冲区。
-- 初始化完成后自动开始连续转换，无需再调用启动函数。
+- 句柄中必须指定 GPIO 引脚掩码（GPIO_Pins，支持多引脚或运算）、通道数组指针 ADC_Channels、通道总数 ChannelCount、以及目标内存 DMABuffer（长度需 ≥ ChannelCount）。
+- 支持多通道交错阵列采集。当 ChannelCount > 1 时，底层自动开启 ADC 扫描模式与 DMA 内存地址递增。
+- 包含完整的 ADC 校准时序，初始化完成后自动触发连续转换，应用层无需额外干预。
 
 ## 注意事项
 所有 HAL 模块内部均不调用任何 RTOS API（除 `hal_delay` 根据宏选择），保持独立于操作系统。 
