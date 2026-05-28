@@ -134,6 +134,19 @@ static void on_enter_motor_ctrl(fsm_t* fsm, void* arg) {
         xTimerReset(ctx->xMenuTimer, 0);
     }
 }
+// 1. 在 on_enter_error_ui 中加一句打印，方便观察
+static void on_enter_error_ui(fsm_t* fsm, void* arg) {
+    Main_System_context_t* ctx = (Main_System_context_t*)arg;
+    
+    SYS_LOG("MAIN", "Network Error! UI Show Failed, Enter Standby in 2s...\n"); // 加入这行打印
+    
+    BSP_OLED_Clear();
+    BSP_OLED_ShowString(2, 1, "Connect Failed!");
+    BSP_OLED_ShowString(3, 1, "Enter Standby..");
+    
+    xTimerChangePeriod(ctx->xMenuTimer, FSM_MS_TO_TICKS(2000), 0);
+    xTimerStart(ctx->xMenuTimer, 0);
+}
 static void on_enter_linking(fsm_t* fsm, void* arg) {
     BSP_OLED_Clear();
     BSP_OLED_ShowString(2, 1, "MQTT Linking...");
@@ -145,8 +158,6 @@ static void vIdleTimeoutCallback(TimerHandle_t xTimer) {
     fsm_t* fsm = (fsm_t*)pvTimerGetTimerID(xTimer);
     fsm_push_event(fsm, EVT_TIMEOUT, 0);
 }
-
-// --- 新增：避障锁定状态进入回调 ---
 static void on_enter_blocked(fsm_t* fsm, void* arg) {
     Main_System_context_t* ctx = (Main_System_context_t*)arg;
     BSP_OLED_Clear();
@@ -168,7 +179,9 @@ static const fsm_state_desc_t Main_System_state_descs[] = {
     { STATE_IDLE,       on_enter_idle,       NULL, NULL },
     { STATE_MOTOR_CTRL, on_enter_motor_ctrl, NULL, NULL },
 		{ STATE_BLOCKED,    on_enter_blocked,    NULL, NULL }, // 注册避障状态
-    { STATE_ERROR,      NULL,                NULL, NULL },
+		{ STATE_ERROR,      on_enter_error_ui,   NULL, NULL }, // 激活 ERROR 状态
+		
+		
 };
 // 展开所有电机同步事件的宏，使代码整洁
 #define TRANS_SYNC_MOTOR(state_from, state_to) \
@@ -185,7 +198,13 @@ static const fsm_transition_t Main_System_transitions[] = {
 		{ STATE_INIT,       EVT_INIT_DONE,         STATE_LINKING,    NULL, NULL },
 		// 2. 只有收到底层网络 FSM 发布的上线事件，才放行进入控制模式
     { STATE_LINKING,    EVT_NET_STATUS_ONLINE, STATE_MOTOR_CTRL, NULL, NULL },
-    // 待机模式逻辑 (任意键唤醒)
+    
+		// 【新增】收到网络错误，进入UI报错界面
+    { STATE_LINKING,    EVT_NET_STATUS_ERROR,  STATE_ERROR,      NULL, NULL },
+    // 【新增】报错界面等待2秒超时后，自动退回待机
+    { STATE_ERROR,      EVT_TIMEOUT,           STATE_IDLE,       NULL, NULL },
+		
+		// 待机模式逻辑 (任意键唤醒)
     { STATE_IDLE,       EVT_KEY1_SHORT_PRESS, STATE_MOTOR_CTRL, NULL, NULL },
     { STATE_IDLE,       EVT_KEY2_SHORT_PRESS, STATE_MOTOR_CTRL, NULL, NULL },
 		{ STATE_MOTOR_CTRL, EVT_TIMEOUT, STATE_IDLE, NULL, NULL },
@@ -230,6 +249,7 @@ void Main_System_fsm_setup(fsm_t* fsm) {
     // 主系统必须订阅所有电机事件，才能响应本地的按键操作和 APP 的网络注入
 		// 订阅网络状态就绪事件 (由 fsm_network 模块在收到 OK 后广播)
     event_bus_subscribe(fsm, EVT_NET_STATUS_ONLINE);
+		event_bus_subscribe(fsm, EVT_NET_STATUS_ERROR);
     event_bus_subscribe(fsm, EVT_MOTOR_STOP);
     event_bus_subscribe(fsm, EVT_MOTOR_FORWARD);
     event_bus_subscribe(fsm, EVT_MOTOR_BACKWARD);

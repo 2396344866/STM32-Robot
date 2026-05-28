@@ -7,7 +7,7 @@
 #include "dev_mq2.h"
 #include "dev_hcsr04.h"
 #include "dev_dht11.h"
-
+#include "sys_config.h"
 // 内部句柄实例
 static MQ2_Handle_t hMq2;
 static HCSR04_Handle_t hHcsr04;
@@ -126,30 +126,38 @@ uint8_t BSP_Sensor_ReadDHT11(uint8_t *temp, uint8_t *humi) {
 // --- 低功耗管理接口 ---
 
 void BSP_Sensors_Sleep(void) {
-    // 1. 关闭 ADC1 转换，停止模拟电路耗电
+    // 1. 关闭 ADC1 转换与定时器
     ADC_Cmd(ADC1, DISABLE);
-    
-    // 2. 关闭超声波定时器 TIM1
     TIM_Cmd(TIM1, DISABLE);
     
-    // DHT11 是单总线轮询器件，不轮询即不耗电，无需额外处理。
-    // MQ2 与光照传感器的分压电路若有外部 MOSFET 控制最佳；若无，仅关闭 ADC 也能省下芯片内部功耗。
+    // 2. 将所有与传感器相关的引脚置为高阻态(模拟输入)
+    // 解释：这只能切断 STM32 内部的静态电流。由于硬件没有设计 MOSFET 开关，
+    // MQ2 等外部模块本身的分压电阻依然会消耗微安级别的物理漏电流。
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_8 | GPIO_Pin_11 | GPIO_Pin_15;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
+    
+    SYS_LOG("SENS", "Pins -> Analog Mode. External leakage unavoidable.\n");
 }
 
 void BSP_Sensors_Wakeup(void) {
-    // 1. 重新开启 ADC1
-    ADC_Cmd(ADC1, ENABLE);
+    // 1. 恢复引脚的原始工作模式
+    HAL_GPIO_Init(GPIOA, GPIO_Pin_8, HAL_GPIO_MODE_OUTPUT_PP); // Trig
+    HAL_TIM1_CH4_IC_Init(GPIOA, GPIO_Pin_11);                  // Echo (输入捕获重置)
+    HAL_GPIO_Init(GPIOA, GPIO_Pin_15, HAL_GPIO_MODE_INPUT_PU); // DHT11
     
-    // 工业规范：从断电恢复的 ADC 需要重新校准
+    // PA4 和 PA5 作为 ADC 原本就是 AIN 模式，无需重复设置
+    
+    // 2. 重新开启并强制校准 ADC
+    ADC_Cmd(ADC1, ENABLE);
     ADC_ResetCalibration(ADC1);
     while(ADC_GetResetCalibrationStatus(ADC1));
     ADC_StartCalibration(ADC1);
     while(ADC_GetCalibrationStatus(ADC1));
-    
-    // 重新触发 ADC_DMA 连续转换
     ADC_SoftwareStartConvCmd(ADC1, ENABLE);
     
-    // 2. 重新开启超声波定时器
+    // 3. 恢复定时器
     TIM_Cmd(TIM1, ENABLE);
 }
 

@@ -37,3 +37,15 @@
 .\objects\bsp_sensor.o: .\DD_Device_Driver\dev_mq2.h
 .\objects\bsp_sensor.o: .\DD_Device_Driver\dev_hcsr04.h
 .\objects\bsp_sensor.o: .\DD_Device_Driver\dev_dht11.h
+.\objects\bsp_sensor.o: .\FSM\sys_config.h
+.\objects\bsp_sensor.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\bsp_sensor.o: .\FreeRTOS\include\FreeRTOS.h
+.\objects\bsp_sensor.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\bsp_sensor.o: .\User\FreeRTOSConfig.h
+.\objects\bsp_sensor.o: .\FreeRTOS\include\projdefs.h
+.\objects\bsp_sensor.o: .\FreeRTOS\include\portable.h
+.\objects\bsp_sensor.o: .\FreeRTOS\include\deprecated_definitions.h
+.\objects\bsp_sensor.o: .\FreeRTOS\portable\ARM_CM3\portmacro.h
+.\objects\bsp_sensor.o: .\FreeRTOS\include\mpu_wrappers.h
+.\objects\bsp_sensor.o: .\FreeRTOS\include\task.h
+.\objects\bsp_sensor.o: .\FreeRTOS\include\list.h

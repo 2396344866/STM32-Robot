@@ -99,10 +99,25 @@ static void on_poll_init(fsm_t* fsm, void* arg) {
 }
 
 static void on_enter_wifi(fsm_t* fsm, void* arg) {
+    Net_context_t* ctx = (Net_context_t*)arg;
     char buf[128];
+    ctx->last_tx_tick = FSM_GET_TICK(); // 记录起始时间戳以供超时检测
     event_bus_publish(EVT_NET_STATUS_WIFI_CONN, 0);
     snprintf(buf, sizeof(buf), "AT+CWJAP=\"%s\",\"%s\"\r\n", WIFI_SSID, WIFI_PWD);
     BSP_ESP8266_SendString(buf);
+}
+
+static void on_poll_wifi(fsm_t* fsm, void* arg) {
+    #if ENABLE_DEBUG_PRINT
+        if (g_fsm_paused) return; 
+    #endif
+    Net_context_t* ctx = (Net_context_t*)arg;
+    
+    // 非阻塞检测：15秒内未收到 "WIFI GOT IP"，判为超时，抛出 ERROR 事件
+    if (FSM_GET_TICK() - ctx->last_tx_tick > FSM_MS_TO_TICKS(15000)) {
+        SYS_LOG("NET", "WiFi Connection Timeout! Retrying...\n");
+        fsm_push_event(fsm, EVT_ERROR, 0);
+    }
 }
 
 static void on_enter_mqtt(fsm_t* fsm, void* arg) {
@@ -210,7 +225,17 @@ static void on_poll_online(fsm_t* fsm, void* arg) {
     }
 }
 static void on_enter_error(fsm_t* fsm, void* arg) {
-    event_bus_publish(EVT_NET_STATUS_ERROR, 0);
+    Net_context_t* ctx = (Net_context_t*)arg;
+    ctx->last_tx_tick = FSM_GET_TICK();
+    event_bus_publish(EVT_NET_STATUS_ERROR, 0); // 通知主系统：网络寄了
+}
+
+static void on_poll_error(fsm_t* fsm, void* arg) {
+    Net_context_t* ctx = (Net_context_t*)arg;
+    // 错误状态下休息 5 秒，然后触发超时事件，重新从 INIT 开始 AT+RST
+    if (FSM_GET_TICK() - ctx->last_tx_tick > FSM_MS_TO_TICKS(5000)) {
+        fsm_push_event(fsm, EVT_TIMEOUT, 0);
+    }
 }
 // 增加转换动作：处理开关事件
 static void action_euler_switch(fsm_t* fsm, void* arg) {
@@ -222,23 +247,28 @@ static void action_euler_switch(fsm_t* fsm, void* arg) {
 // --- FSM 表 ---
 static const fsm_state_desc_t net_states[] = {
     { STATE_NET_INIT,      on_enter_init,   NULL, on_poll_init },
-    { STATE_NET_WIFI_CONN, on_enter_wifi,   NULL, NULL },
+    { STATE_NET_WIFI_CONN, on_enter_wifi,   NULL, on_poll_wifi }, 
     { STATE_NET_MQTT_CONN, on_enter_mqtt,   NULL, on_poll_mqtt },
     { STATE_NET_ONLINE,    on_enter_online, NULL, on_poll_online },
-    { STATE_NET_ERROR,     on_enter_error,  NULL, NULL },
+    { STATE_NET_ERROR,     on_enter_error,  NULL, on_poll_error },
 };
-
+// 更新转换表，确保所有错误先去 ERROR 状态，再由超时触发重启
 static const fsm_transition_t net_trans[] = {
     { STATE_NET_INIT,      EVT_INIT_DONE, STATE_NET_WIFI_CONN, NULL, NULL },
     { STATE_NET_WIFI_CONN, EVT_SELECT_1,  STATE_NET_MQTT_CONN, NULL, NULL }, 
-    { STATE_NET_MQTT_CONN, EVT_SELECT_2,  STATE_NET_ONLINE,    NULL, NULL },
-		{ STATE_NET_ONLINE, EVT_NET_EULER_OPEN, STATE_NET_ONLINE, NULL, action_euler_switch },
     
-		{ STATE_NET_ONLINE, EVT_NET_EULER_CLOSE, STATE_NET_ONLINE, NULL, action_euler_switch }, 
+    // 【修改】任何阶段发生 ERROR，先去 ERROR 状态通报
+    { STATE_NET_WIFI_CONN, EVT_ERROR,     STATE_NET_ERROR,     NULL, NULL },
+    { STATE_NET_MQTT_CONN, EVT_ERROR,     STATE_NET_ERROR,     NULL, NULL },
     { STATE_NET_ONLINE,    EVT_ERROR,     STATE_NET_ERROR,     NULL, NULL },
-		{ STATE_NET_ONLINE,    EVT_ERROR,     STATE_NET_ERROR,     NULL, NULL },
+    
+    // 【新增】ERROR 状态休息 5 秒后，重新从 INIT 开始复位
+    { STATE_NET_ERROR,     EVT_TIMEOUT,   STATE_NET_INIT,      NULL, NULL },
+    
+    { STATE_NET_MQTT_CONN, EVT_SELECT_2,  STATE_NET_ONLINE,    NULL, NULL },
+    { STATE_NET_ONLINE, EVT_NET_EULER_OPEN, STATE_NET_ONLINE, NULL, action_euler_switch },
+    { STATE_NET_ONLINE, EVT_NET_EULER_CLOSE, STATE_NET_ONLINE, NULL, action_euler_switch }, 
 };
-
 void Network_FSM_Setup(fsm_t* fsm) {
     if (!fsm) return;
 

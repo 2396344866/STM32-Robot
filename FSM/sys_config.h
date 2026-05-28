@@ -48,7 +48,7 @@
  * @attention 此值为编译时常量，修改后需要重新编译整个模块
  */
  
-#define BUS_MAX_SUBS 48
+#define BUS_MAX_SUBS 30
 
 /**
  * @brief 全局调试开关
