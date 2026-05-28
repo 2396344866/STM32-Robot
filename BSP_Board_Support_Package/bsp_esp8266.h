@@ -4,7 +4,7 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 
-#define ESP8266_RX_MAX 256
+#define ESP8266_RX_MAX 512
 
 extern uint8_t g_esp8266_rx_buf[ESP8266_RX_MAX];
 extern QueueHandle_t xNetRxQueue;

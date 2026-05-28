@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\project.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\project.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Thu May 28 13:01:27 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Thu May 28 15:04:24 2026
 <BR><P>
 <H3>Maximum Stack Usage =       1000 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1211,8 +1211,8 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[5f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;start_task
 </UL>
 
-<P><STRONG><a name="[102]"></a>BSP_ESP8266_Init</STRONG> (Thumb, 78 bytes, Stack size 8 bytes, bsp_esp8266.o(i.BSP_ESP8266_Init))
-<BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = BSP_ESP8266_Init &rArr; xQueueGenericCreate &rArr; pvPortMalloc &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
+<P><STRONG><a name="[102]"></a>BSP_ESP8266_Init</STRONG> (Thumb, 80 bytes, Stack size 16 bytes, bsp_esp8266.o(i.BSP_ESP8266_Init))
+<BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = BSP_ESP8266_Init &rArr; xQueueGenericCreate &rArr; pvPortMalloc &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericCreate
 <LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_Init
@@ -2473,8 +2473,8 @@ Global Symbols
 <LI><a href="#[133]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_PWM_TimerInit
 </UL>
 
-<P><STRONG><a name="[36]"></a>USART1_IRQHandler</STRONG> (Thumb, 150 bytes, Stack size 32 bytes, bsp_esp8266.o(i.USART1_IRQHandler))
-<BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = USART1_IRQHandler &rArr; xQueueGenericSendFromISR &rArr; prvCopyDataToQueue
+<P><STRONG><a name="[36]"></a>USART1_IRQHandler</STRONG> (Thumb, 156 bytes, Stack size 40 bytes, bsp_esp8266.o(i.USART1_IRQHandler))
+<BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = USART1_IRQHandler &rArr; xQueueGenericSendFromISR &rArr; prvCopyDataToQueue
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DMA_SetCurrDataCounter
 <LI><a href="#[1b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DMA_GetCurrDataCounter
