@@ -1087,7 +1087,7 @@ I (.\Library\inc\stm32f10x_wwdg.h)(0x4D783BB4)
 I (.\Library\inc\misc.h)(0x4D783BB4)
 I (.\FreeRTOS\include\queue.h)(0x64020E50)
 F (.\FSM\fsm_main_system.h)(0x69EE03A1)()
-F (.\FSM\fsm_motor.c)(0x6A0153E5)(--c99 -c --cpu Cortex-M3 -g -O1 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\Library\inc -I .\Library\src -I .\System -I .\Hardware -I .\FreeRTOS -I .\FreeRTOS\include -I .\FreeRTOS\portable -I .\FreeRTOS\source -I .\FreeRTOS\portable\ARM_CM3 -I .\BSP_Board_Support_Package -I .\DD_Device_Driver -I .\HAL_Hardware_Driver_Layer -I .\FSM -I .\Motion_driver-ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-D__UVISION_VERSION="542" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_DMP -DMPL_LOG_NDEBUG="1" -DEMPL -DMPU6050 -DEMPL_TARGET_STM32F1-o .\objects\fsm_motor.o --omf_browse .\objects\fsm_motor.crf --depend .\objects\fsm_motor.d)
+F (.\FSM\fsm_motor.c)(0x6A17F01D)(--c99 -c --cpu Cortex-M3 -g -O1 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\Library\inc -I .\Library\src -I .\System -I .\Hardware -I .\FreeRTOS -I .\FreeRTOS\include -I .\FreeRTOS\portable -I .\FreeRTOS\source -I .\FreeRTOS\portable\ARM_CM3 -I .\BSP_Board_Support_Package -I .\DD_Device_Driver -I .\HAL_Hardware_Driver_Layer -I .\FSM -I .\Motion_driver-ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-D__UVISION_VERSION="542" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_DMP -DMPL_LOG_NDEBUG="1" -DEMPL -DMPU6050 -DEMPL_TARGET_STM32F1-o .\objects\fsm_motor.o --omf_browse .\objects\fsm_motor.crf --depend .\objects\fsm_motor.d)
 I (FSM\fsm_motor.h)(0x69EF1BE2)
 I (FSM\fsm_core.h)(0x69914E8F)
 I (D:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599ECD2E)
