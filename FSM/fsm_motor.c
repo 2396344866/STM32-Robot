@@ -527,3 +527,220 @@ void Motor_FSM_task(void *pvParameters){
 			vTaskDelayUntil(&xLastWakeTime, xFrequency);
     }
 }
+
+//////////////////////////////////////// 新版本////////////////////////////////
+
+//#include "fsm_motor.h"
+//#include "fsm_core.h"
+//#include "FreeRTOS.h"
+//#include "event_bus.h"
+//#include "sys_events.h"
+//#include "task.h"
+//#include "hal_pwm.h" 
+//#include "bsp_servo.h"
+//#include "bsp_mpu6050.h"
+//#include <math.h>
+
+//static fsm_t g_Motor_fsm;
+//MPU6050_Data_t g_imu_data;
+
+///* ============================================================
+// * 动态运动学参数配置
+// * ============================================================ */
+//#define MATH_PI             3.14159265f
+//#define GAIT_PERIOD_MS      800.0f        // 完整步态周期时间 (毫秒)
+//#define POLL_INTERVAL_MS    20.0f         // FSM轮询周期
+//#define PHASE_INC           (POLL_INTERVAL_MS / GAIT_PERIOD_MS) // 相位增量
+
+//#define SWING_AMP_HIP       35.0f         // 髋关节摆动幅度 (度)
+//#define SWING_AMP_KNEE      35.0f         // 膝关节抬升幅度 (度)
+//#define ANGLE_NEUTRAL       90.0f         // 中性态基准角度
+
+//enum {
+//    ID_LT_KNEE = 0, ID_LT_HIP,
+//    ID_RT_KNEE, ID_RT_HIP,
+//    ID_RB_KNEE, ID_RB_HIP,
+//    ID_LB_KNEE, ID_LB_HIP
+//};
+
+//// --- 静态上下文结构体扩展 ---
+//typedef struct {
+//    float current_phase;    // 全局步态相位 [0.0, 1.0)
+//    TickType_t last_tick;   // 时间戳
+//} dynamic_motor_ctx_t;
+
+//static fsm_event_t motor_evt_buf[16];
+//static dynamic_motor_ctx_t dyn_motor_ctx;
+
+///* ============================================================
+// * 轨迹发生器计算逻辑 (第一性原理方程应用)
+// * ============================================================ */
+//#define ANGLE_MIN 45.0f
+//#define ANGLE_MAX 125.0f
+
+//static void get_offsets(float p, float *hip_off, float *knee_off) {
+//    if (p < 0.5f) { // 摆动相：在空中画半圆抬腿
+//        *hip_off  = SWING_AMP_HIP * sinf(MATH_PI * p * 2.0f);
+//        *knee_off = -SWING_AMP_KNEE * sinf(MATH_PI * p * 2.0f); // 产生负的偏移量用于抬腿
+//    } else { // 支撑相：在地面平滑回退推动机体
+//        *hip_off  = SWING_AMP_HIP * cosf(MATH_PI * (p - 0.5f) * 2.0f);
+//        *knee_off = 0;
+//    }
+//}
+
+//static void generate_trot_gait(float phase, uint16_t state, float out_angles[8]) {
+//    // 1. 初始化为中性态 (90度)
+//    for(int i = 0; i < 8; i++) out_angles[i] = ANGLE_NEUTRAL;
+//    if (state == STATE_MOTOR_STOP) return;
+
+//    // 2. 对角相位计算
+//    float p1 = phase;                             // 对角组1: 左前(LT) & 右后(RB)
+//    float p2 = fmodf(phase + 0.5f, 1.0f);         // 对角组2: 右前(RT) & 左后(LB)
+//    float h1, k1, h2, k2;
+
+//    get_offsets(p1, &h1, &k1);
+//    get_offsets(p2, &h2, &k2);
+
+//    // ==============================================================
+//    // 3. 膝关节绝对控制：无论什么动作，抬腿极性恒定
+//    // 根据原版注释：LT与RB抬腿=55(减小)，RT与LB抬腿=125(增大)
+//    // 由于 k1/k2 在摆动相是负数，所以 LT/RB 用加号(90+(-35)=55)，RT/LB用减号(90-(-35)=125)
+//    // ==============================================================
+//    out_angles[ID_LT_KNEE] = ANGLE_NEUTRAL + k1;
+//    out_angles[ID_RB_KNEE] = ANGLE_NEUTRAL + k1;
+//    out_angles[ID_RT_KNEE] = ANGLE_NEUTRAL - k2;
+//    out_angles[ID_LB_KNEE] = ANGLE_NEUTRAL - k2;
+
+//    // ==============================================================
+//    // 4. 髋关节运动学映射（基于原版步态矩阵与动力学极性对称校正）
+//    // ==============================================================
+//    if (state == STATE_MOTOR_FORWARD || state == STATE_MOTOR_BACKWARD) {
+//        float dir = (state == STATE_MOTOR_FORWARD) ? 1.0f : -1.0f;
+//        
+//        // 彻底解决右偏转圈：严格按照原版物理极性对称推导
+//        // FORWARD (dir=1): LT前摆变小(-h1), RB前摆变大(+h1), RT前摆变大(+h2), LB前摆变小(-h2)
+//        out_angles[ID_LT_HIP] = ANGLE_NEUTRAL - (h1 * dir);
+//        out_angles[ID_RB_HIP] = ANGLE_NEUTRAL + (h1 * dir);
+//        out_angles[ID_RT_HIP] = ANGLE_NEUTRAL + (h2 * dir);
+//        out_angles[ID_LB_HIP] = ANGLE_NEUTRAL - (h2 * dir);
+//    } 
+//    else if (state == STATE_MOTOR_LEFT || state == STATE_MOTOR_RIGHT) {
+//        float dir = (state == STATE_MOTOR_LEFT) ? 1.0f : -1.0f;
+//        
+//        // 平移（横向平移）：四条腿的髋关节需要同向平移产生横向分力
+//        // 原版 LEFT (dir=1): LT=125(+h1), RB=55(-h1), RT=125(+h2), LB=55(-h2)
+//        out_angles[ID_LT_HIP] = ANGLE_NEUTRAL + (h1 * dir);
+//        out_angles[ID_RB_HIP] = ANGLE_NEUTRAL - (h1 * dir);
+//        out_angles[ID_RT_HIP] = ANGLE_NEUTRAL + (h2 * dir);
+//        out_angles[ID_LB_HIP] = ANGLE_NEUTRAL - (h2 * dir);
+//    }
+//    else if (state == STATE_MOTOR_ROT_L || state == STATE_MOTOR_ROT_R) {
+//        float dir = (state == STATE_MOTOR_ROT_L) ? 1.0f : -1.0f;
+//        
+//        // 旋转（原位扭转）：左右两侧执行相反的推进方向以产生转矩
+//        // 原版 ROT_L (dir=1): 所有关节一律前摆到最大或同向偏转，四腿全加
+//        out_angles[ID_LT_HIP] = ANGLE_NEUTRAL + (h1 * dir);
+//        out_angles[ID_RB_HIP] = ANGLE_NEUTRAL + (h1 * dir);
+//        out_angles[ID_RT_HIP] = ANGLE_NEUTRAL + (h2 * dir);
+//        out_angles[ID_LB_HIP] = ANGLE_NEUTRAL + (h2 * dir);
+//    }
+
+//    // ==============================================================
+//    // 5. 强制硬件限位 (保护舵机，防止因为超出行程扫齿导致卡死)
+//    // ==============================================================
+//    for(int i = 0; i < 8; i++) {
+//        if(out_angles[i] < ANGLE_MIN) out_angles[i] = ANGLE_MIN;
+//        if(out_angles[i] > ANGLE_MAX) out_angles[i] = ANGLE_MAX;
+//    }
+//}
+
+///* ============================================================
+// * 统一轮询器 (Poll Callback)
+// * ============================================================ */
+//static void on_poll_dynamic_gait(fsm_t* fsm, void* arg) {
+//    dynamic_motor_ctx_t* ctx = (dynamic_motor_ctx_t*)arg;
+//    TickType_t now = FSM_GET_TICK();
+//    if ((now - ctx->last_tick) < FSM_MS_TO_TICKS(POLL_INTERVAL_MS)) return;
+//    ctx->last_tick = now;
+
+//    if (fsm->current_state != STATE_MOTOR_STOP) {
+//        ctx->current_phase += PHASE_INC;
+//        if (ctx->current_phase >= 1.0f) ctx->current_phase -= 1.0f;
+//    }
+
+//    float angles[8];
+//    generate_trot_gait(ctx->current_phase, fsm->current_state, angles);
+//    
+//    BSP_Servo_Set_Left_Top_Knee(angles[ID_LT_KNEE]);
+//    BSP_Servo_Set_Left_Top_Hip(angles[ID_LT_HIP]);
+//    BSP_Servo_Set_Right_Top_Knee(angles[ID_RT_KNEE]);
+//    BSP_Servo_Set_Right_Top_Hip(angles[ID_RT_HIP]);
+//    BSP_Servo_Set_Right_Bottom_Knee(angles[ID_RB_KNEE]);
+//    BSP_Servo_Set_Right_Bottom_Hip(angles[ID_RB_HIP]);
+//    BSP_Servo_Set_Left_Bottom_Knee(angles[ID_LB_KNEE]);
+//    BSP_Servo_Set_Left_Bottom_Hip(angles[ID_LB_HIP]);
+//}
+
+//// --- 状态切入复位函数 ---
+//static void reset_phase_on_enter(fsm_t* f, void* a) {
+//    dyn_motor_ctx.last_tick = FSM_GET_TICK();
+//}
+
+///* ============================================================
+// * 状态描述表与转换表集成
+// * ============================================================ */
+//static const fsm_state_desc_t motor_states[] = {
+//    { STATE_MOTOR_STOP,     reset_phase_on_enter, NULL, on_poll_dynamic_gait },
+//    { STATE_MOTOR_FORWARD,  reset_phase_on_enter, NULL, on_poll_dynamic_gait },
+//    { STATE_MOTOR_BACKWARD, reset_phase_on_enter, NULL, on_poll_dynamic_gait },
+//    { STATE_MOTOR_LEFT,     reset_phase_on_enter, NULL, on_poll_dynamic_gait },
+//    { STATE_MOTOR_RIGHT,    reset_phase_on_enter, NULL, on_poll_dynamic_gait },
+//    { STATE_MOTOR_ROT_L,    reset_phase_on_enter, NULL, on_poll_dynamic_gait },
+//    { STATE_MOTOR_ROT_R,    reset_phase_on_enter, NULL, on_poll_dynamic_gait },
+//};
+
+//static const fsm_transition_t motor_trans[] = {
+//    { STATE_MOTOR_STOP,     EVT_MOTOR_FORWARD,  STATE_MOTOR_FORWARD,  NULL, NULL },
+//    { STATE_MOTOR_STOP,     EVT_MOTOR_BACKWARD, STATE_MOTOR_BACKWARD, NULL, NULL },
+//    { STATE_MOTOR_STOP,     EVT_MOTOR_LEFT,     STATE_MOTOR_LEFT,     NULL, NULL },
+//    { STATE_MOTOR_STOP,     EVT_MOTOR_RIGHT,    STATE_MOTOR_RIGHT,    NULL, NULL },
+//    { STATE_MOTOR_STOP,     EVT_MOTOR_ROT_L,    STATE_MOTOR_ROT_L,    NULL, NULL },
+//    { STATE_MOTOR_STOP,     EVT_MOTOR_ROT_R,    STATE_MOTOR_ROT_R,    NULL, NULL },
+//    
+//    { STATE_MOTOR_FORWARD,  EVT_MOTOR_STOP,     STATE_MOTOR_STOP,     NULL, NULL },
+//    { STATE_MOTOR_BACKWARD, EVT_MOTOR_STOP,     STATE_MOTOR_STOP,     NULL, NULL },
+//    { STATE_MOTOR_LEFT,     EVT_MOTOR_STOP,     STATE_MOTOR_STOP,     NULL, NULL },
+//    { STATE_MOTOR_RIGHT,    EVT_MOTOR_STOP,     STATE_MOTOR_STOP,     NULL, NULL },
+//    { STATE_MOTOR_ROT_L,    EVT_MOTOR_STOP,     STATE_MOTOR_STOP,     NULL, NULL },
+//    { STATE_MOTOR_ROT_R,    EVT_MOTOR_STOP,     STATE_MOTOR_STOP,     NULL, NULL },
+//};
+
+//void Motor_FSM_Setup(fsm_t* fsm) {
+//    dyn_motor_ctx.current_phase = 0.0f;
+//    dyn_motor_ctx.last_tick = FSM_GET_TICK();
+//    fsm_init(fsm, motor_evt_buf, 16, motor_trans, 12, STATE_MOTOR_STOP, &dyn_motor_ctx);
+//    fsm_set_state_callbacks(fsm, motor_states, 7);
+//    event_bus_subscribe(fsm, EVT_MOTOR_STOP);
+//    event_bus_subscribe(fsm, EVT_MOTOR_FORWARD);
+//    event_bus_subscribe(fsm, EVT_MOTOR_BACKWARD);
+//    event_bus_subscribe(fsm, EVT_MOTOR_LEFT);
+//    event_bus_subscribe(fsm, EVT_MOTOR_RIGHT);
+//    event_bus_subscribe(fsm, EVT_MOTOR_ROT_L);
+//    event_bus_subscribe(fsm, EVT_MOTOR_ROT_R);
+//}
+
+//void Motor_FSM_task(void *pvParameters){
+//    Motor_FSM_Setup(&g_Motor_fsm);
+//    BSP_MPU6050_Init();
+//    const TickType_t xFrequency = pdMS_TO_TICKS(20); 
+//    TickType_t xLastWakeTime = xTaskGetTickCount();
+//    
+//    while(1) {
+//        if (BSP_MPU6050_IsWorking() && BSP_MPU6050_IsDataReady()) {
+//            BSP_MPU6050_ClearDataReady(); 
+//            BSP_MPU6050_GetData(&g_imu_data);
+//        }
+//        fsm_run(&g_Motor_fsm);
+//        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+//    }
+//}
