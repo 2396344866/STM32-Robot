@@ -8,4 +8,4 @@
 .\objects\inv_mpu_dmp_motion_driver.o: Motion_driver\inv_mpu_dmp_motion_driver.h
 .\objects\inv_mpu_dmp_motion_driver.o: Motion_driver\dmpKey.h
 .\objects\inv_mpu_dmp_motion_driver.o: Motion_driver\dmpmap.h
-.\objects\inv_mpu_dmp_motion_driver.o: .\DD_Device_Driver\dev_mpu6050.h
+.\objects\inv_mpu_dmp_motion_driver.o: .\BSP_Board_Support_Package\bsp_mpu6050.h

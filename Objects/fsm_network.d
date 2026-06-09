@@ -22,6 +22,5 @@
 .\objects\fsm_network.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\fsm_network.o: .\BSP_Board_Support_Package\bsp_debug_uart.h
 .\objects\fsm_network.o: .\BSP_Board_Support_Package\bsp_mpu6050.h
-.\objects\fsm_network.o: .\DD_Device_Driver\dev_mpu6050.h
 .\objects\fsm_network.o: FSM\fsm_motor.h
 .\objects\fsm_network.o: FSM\fsm_sensor.h

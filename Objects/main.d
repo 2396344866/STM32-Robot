@@ -47,7 +47,6 @@
 .\objects\main.o: .\BSP_Board_Support_Package\bsp_oled.h
 .\objects\main.o: .\BSP_Board_Support_Package\bsp_servo.h
 .\objects\main.o: .\BSP_Board_Support_Package\bsp_mpu6050.h
-.\objects\main.o: .\DD_Device_Driver\dev_mpu6050.h
 .\objects\main.o: .\BSP_Board_Support_Package\bsp_esp8266.h
 .\objects\main.o: .\FSM\sys_events.h
 .\objects\main.o: .\FSM\fsm_core.h

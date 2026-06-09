@@ -773,8 +773,7 @@ I (.\FSM\sys_config.h)(0x6A17C369)
 I (.\FreeRTOS\include\queue.h)(0x64020E50)
 I (.\BSP_Board_Support_Package\bsp_oled.h)(0x699314A9)
 I (.\BSP_Board_Support_Package\bsp_servo.h)(0x699314A4)
-I (.\BSP_Board_Support_Package\bsp_mpu6050.h)(0x69DDD07A)
-I (.\DD_Device_Driver\dev_mpu6050.h)(0x69BA47A4)
+I (.\BSP_Board_Support_Package\bsp_mpu6050.h)(0x6A27DCEC)
 I (.\BSP_Board_Support_Package\bsp_esp8266.h)(0x6A17E8D4)
 I (.\FSM\sys_events.h)(0x69EF5A72)
 I (.\FSM\fsm_core.h)(0x69914E8F)
@@ -1087,7 +1086,7 @@ I (.\Library\inc\stm32f10x_wwdg.h)(0x4D783BB4)
 I (.\Library\inc\misc.h)(0x4D783BB4)
 I (.\FreeRTOS\include\queue.h)(0x64020E50)
 F (.\FSM\fsm_main_system.h)(0x69EE03A1)()
-F (.\FSM\fsm_motor.c)(0x6A243202)(--c99 -c --cpu Cortex-M3 -g -O1 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\Library\inc -I .\Library\src -I .\System -I .\Hardware -I .\FreeRTOS -I .\FreeRTOS\include -I .\FreeRTOS\portable -I .\FreeRTOS\source -I .\FreeRTOS\portable\ARM_CM3 -I .\BSP_Board_Support_Package -I .\DD_Device_Driver -I .\HAL_Hardware_Driver_Layer -I .\FSM -I .\Motion_driver-ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-D__UVISION_VERSION="542" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_DMP -DMPL_LOG_NDEBUG="1" -DEMPL -DMPU6050 -DEMPL_TARGET_STM32F1-o .\objects\fsm_motor.o --omf_browse .\objects\fsm_motor.crf --depend .\objects\fsm_motor.d)
+F (.\FSM\fsm_motor.c)(0x6A27DB48)(--c99 -c --cpu Cortex-M3 -g -O1 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\Library\inc -I .\Library\src -I .\System -I .\Hardware -I .\FreeRTOS -I .\FreeRTOS\include -I .\FreeRTOS\portable -I .\FreeRTOS\source -I .\FreeRTOS\portable\ARM_CM3 -I .\BSP_Board_Support_Package -I .\DD_Device_Driver -I .\HAL_Hardware_Driver_Layer -I .\FSM -I .\Motion_driver-ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-D__UVISION_VERSION="542" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_DMP -DMPL_LOG_NDEBUG="1" -DEMPL -DMPU6050 -DEMPL_TARGET_STM32F1-o .\objects\fsm_motor.o --omf_browse .\objects\fsm_motor.crf --depend .\objects\fsm_motor.d)
 I (FSM\fsm_motor.h)(0x69EF1BE2)
 I (FSM\fsm_core.h)(0x69914E8F)
 I (D:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599ECD2E)
@@ -1104,8 +1103,7 @@ I (.\FreeRTOS\portable\ARM_CM3\portmacro.h)(0x64020E50)
 I (.\FreeRTOS\include\mpu_wrappers.h)(0x64020E50)
 I (.\FreeRTOS\include\task.h)(0x698B2D54)
 I (.\FreeRTOS\include\list.h)(0x64020E50)
-I (.\BSP_Board_Support_Package\bsp_mpu6050.h)(0x69DDD07A)
-I (.\DD_Device_Driver\dev_mpu6050.h)(0x69BA47A4)
+I (.\BSP_Board_Support_Package\bsp_mpu6050.h)(0x6A27DCEC)
 I (FSM\event_bus.h)(0x6991462D)
 I (FSM\sys_events.h)(0x69EF5A72)
 I (.\HAL_Hardware_Driver_Layer\hal_pwm.h)(0x6992F6E2)
@@ -1183,8 +1181,7 @@ I (.\BSP_Board_Support_Package\bsp_esp8266.h)(0x6A17E8D4)
 I (.\FreeRTOS\include\queue.h)(0x64020E50)
 I (D:\Keil_v5\ARM\ARMCC\include\string.h)(0x599ECD2C)
 I (.\BSP_Board_Support_Package\bsp_debug_uart.h)(0x69CA5AD8)
-I (.\BSP_Board_Support_Package\bsp_mpu6050.h)(0x69DDD07A)
-I (.\DD_Device_Driver\dev_mpu6050.h)(0x69BA47A4)
+I (.\BSP_Board_Support_Package\bsp_mpu6050.h)(0x6A27DCEC)
 I (FSM\fsm_motor.h)(0x69EF1BE2)
 I (FSM\fsm_sensor.h)(0x69EF1BE5)
 F (.\FSM\fsm_network.h)(0x69EF1BE9)()
@@ -1311,7 +1308,7 @@ I (.\FreeRTOS\include\mpu_wrappers.h)(0x64020E50)
 I (.\FreeRTOS\include\task.h)(0x698B2D54)
 I (.\FreeRTOS\include\list.h)(0x64020E50)
 I (.\FreeRTOS\include\queue.h)(0x64020E50)
-I (.\HAL_Hardware_Driver_Layer\hal_uart.h)(0x69B7FAB5)
+I (.\HAL_Hardware_Driver_Layer\hal_uart.h)(0x6A27DB5A)
 I (.\Start\stm32f10x.h)(0x4D783CB4)
 I (.\Start\core_cm3.h)(0x4D523B58)
 I (.\Start\system_stm32f10x.h)(0x4D783CAA)
@@ -1343,24 +1340,9 @@ I (.\HAL_Hardware_Driver_Layer\hal_uart_dma.h)(0x69BA106C)
 I (.\HAL_Hardware_Driver_Layer\hal_gpio.h)(0x69F05F17)
 I (D:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x599ECD2E)
 F (.\BSP_Board_Support_Package\bsp_debug_uart.h)(0x69CA5AD8)()
-F (.\BSP_Board_Support_Package\bsp_mpu6050.c)(0x69F05F16)(--c99 -c --cpu Cortex-M3 -g -O1 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\Library\inc -I .\Library\src -I .\System -I .\Hardware -I .\FreeRTOS -I .\FreeRTOS\include -I .\FreeRTOS\portable -I .\FreeRTOS\source -I .\FreeRTOS\portable\ARM_CM3 -I .\BSP_Board_Support_Package -I .\DD_Device_Driver -I .\HAL_Hardware_Driver_Layer -I .\FSM -I .\Motion_driver-ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-D__UVISION_VERSION="542" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_DMP -DMPL_LOG_NDEBUG="1" -DEMPL -DMPU6050 -DEMPL_TARGET_STM32F1-o .\objects\bsp_mpu6050.o --omf_browse .\objects\bsp_mpu6050.crf --depend .\objects\bsp_mpu6050.d)
-I (BSP_Board_Support_Package\bsp_mpu6050.h)(0x69DDD07A)
-I (.\DD_Device_Driver\dev_mpu6050.h)(0x69BA47A4)
+F (.\BSP_Board_Support_Package\bsp_mpu6050.c)(0x6A27DDD6)(--c99 -c --cpu Cortex-M3 -g -O1 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\Library\inc -I .\Library\src -I .\System -I .\Hardware -I .\FreeRTOS -I .\FreeRTOS\include -I .\FreeRTOS\portable -I .\FreeRTOS\source -I .\FreeRTOS\portable\ARM_CM3 -I .\BSP_Board_Support_Package -I .\DD_Device_Driver -I .\HAL_Hardware_Driver_Layer -I .\FSM -I .\Motion_driver-ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-D__UVISION_VERSION="542" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_DMP -DMPL_LOG_NDEBUG="1" -DEMPL -DMPU6050 -DEMPL_TARGET_STM32F1-o .\objects\bsp_mpu6050.o --omf_browse .\objects\bsp_mpu6050.crf --depend .\objects\bsp_mpu6050.d)
+I (BSP_Board_Support_Package\bsp_mpu6050.h)(0x6A27DCEC)
 I (D:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599ECD2E)
-I (BSP_Board_Support_Package\bsp_debug_uart.h)(0x69CA5AD8)
-I (.\FSM\sys_config.h)(0x6A17C369)
-I (D:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599ECD2C)
-I (.\FreeRTOS\include\FreeRTOS.h)(0x64020E50)
-I (D:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x599ECD2C)
-I (.\User\FreeRTOSConfig.h)(0x6A17C369)
-I (.\FreeRTOS\include\projdefs.h)(0x64020E50)
-I (.\FreeRTOS\include\portable.h)(0x64020E50)
-I (.\FreeRTOS\include\deprecated_definitions.h)(0x64020E50)
-I (.\FreeRTOS\portable\ARM_CM3\portmacro.h)(0x64020E50)
-I (.\FreeRTOS\include\mpu_wrappers.h)(0x64020E50)
-I (.\FreeRTOS\include\task.h)(0x698B2D54)
-I (.\FreeRTOS\include\list.h)(0x64020E50)
-I (.\FreeRTOS\include\queue.h)(0x64020E50)
 I (.\HAL_Hardware_Driver_Layer\hal_hard_i2c.h)(0x69B7F2B4)
 I (.\Start\stm32f10x.h)(0x4D783CB4)
 I (.\Start\core_cm3.h)(0x4D523B58)
@@ -1391,9 +1373,23 @@ I (.\Library\inc\stm32f10x_wwdg.h)(0x4D783BB4)
 I (.\Library\inc\misc.h)(0x4D783BB4)
 I (.\HAL_Hardware_Driver_Layer\hal_exti.h)(0x69B7F2B4)
 I (.\HAL_Hardware_Driver_Layer\hal_delay.h)(0x69931A1D)
-I (.\HAL_Hardware_Driver_Layer\hal_uart.h)(0x69B7FAB5)
+I (.\FSM\sys_config.h)(0x6A17C369)
+I (D:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599ECD2C)
+I (.\FreeRTOS\include\FreeRTOS.h)(0x64020E50)
+I (D:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x599ECD2C)
+I (.\User\FreeRTOSConfig.h)(0x6A17C369)
+I (.\FreeRTOS\include\projdefs.h)(0x64020E50)
+I (.\FreeRTOS\include\portable.h)(0x64020E50)
+I (.\FreeRTOS\include\deprecated_definitions.h)(0x64020E50)
+I (.\FreeRTOS\portable\ARM_CM3\portmacro.h)(0x64020E50)
+I (.\FreeRTOS\include\mpu_wrappers.h)(0x64020E50)
+I (.\FreeRTOS\include\task.h)(0x698B2D54)
+I (.\FreeRTOS\include\list.h)(0x64020E50)
+I (.\Motion_driver\inv_mpu.h)(0x69B82B74)
+I (.\Motion_driver\inv_mpu_dmp_motion_driver.h)(0x69B82B74)
+I (D:\Keil_v5\ARM\ARMCC\include\math.h)(0x599ECD2E)
 I (D:\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x599ECD2A)
-F (.\BSP_Board_Support_Package\bsp_mpu6050.h)(0x69DDD07A)()
+F (.\BSP_Board_Support_Package\bsp_mpu6050.h)(0x6A27DCEC)()
 F (.\BSP_Board_Support_Package\bsp_esp8266.c)(0x69BA81B0)(--c99 -c --cpu Cortex-M3 -g -O1 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\Library\inc -I .\Library\src -I .\System -I .\Hardware -I .\FreeRTOS -I .\FreeRTOS\include -I .\FreeRTOS\portable -I .\FreeRTOS\source -I .\FreeRTOS\portable\ARM_CM3 -I .\BSP_Board_Support_Package -I .\DD_Device_Driver -I .\HAL_Hardware_Driver_Layer -I .\FSM -I .\Motion_driver-ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-D__UVISION_VERSION="542" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_DMP -DMPL_LOG_NDEBUG="1" -DEMPL -DMPU6050 -DEMPL_TARGET_STM32F1-o .\objects\bsp_esp8266.o --omf_browse .\objects\bsp_esp8266.crf --depend .\objects\bsp_esp8266.d)
 I (BSP_Board_Support_Package\bsp_esp8266.h)(0x6A17E8D4)
 I (.\FreeRTOS\include\FreeRTOS.h)(0x64020E50)
@@ -1408,7 +1404,7 @@ I (.\FreeRTOS\include\mpu_wrappers.h)(0x64020E50)
 I (.\FreeRTOS\include\queue.h)(0x64020E50)
 I (.\FreeRTOS\include\task.h)(0x698B2D54)
 I (.\FreeRTOS\include\list.h)(0x64020E50)
-I (.\HAL_Hardware_Driver_Layer\hal_uart.h)(0x69B7FAB5)
+I (.\HAL_Hardware_Driver_Layer\hal_uart.h)(0x6A27DB5A)
 I (.\Start\stm32f10x.h)(0x4D783CB4)
 I (.\Start\core_cm3.h)(0x4D523B58)
 I (.\Start\system_stm32f10x.h)(0x4D783CAA)
@@ -1630,7 +1626,7 @@ I (.\FreeRTOS\include\task.h)(0x698B2D54)
 I (.\FreeRTOS\include\list.h)(0x64020E50)
 F (.\HAL_Hardware_Driver_Layer\hal_delay.h)(0x69931A1D)()
 F (.\HAL_Hardware_Driver_Layer\hal_uart.c)(0x69BA2AC8)(--c99 -c --cpu Cortex-M3 -g -O1 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\Library\inc -I .\Library\src -I .\System -I .\Hardware -I .\FreeRTOS -I .\FreeRTOS\include -I .\FreeRTOS\portable -I .\FreeRTOS\source -I .\FreeRTOS\portable\ARM_CM3 -I .\BSP_Board_Support_Package -I .\DD_Device_Driver -I .\HAL_Hardware_Driver_Layer -I .\FSM -I .\Motion_driver-ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-D__UVISION_VERSION="542" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_DMP -DMPL_LOG_NDEBUG="1" -DEMPL -DMPU6050 -DEMPL_TARGET_STM32F1-o .\objects\hal_uart.o --omf_browse .\objects\hal_uart.crf --depend .\objects\hal_uart.d)
-I (HAL_Hardware_Driver_Layer\hal_uart.h)(0x69B7FAB5)
+I (HAL_Hardware_Driver_Layer\hal_uart.h)(0x6A27DB5A)
 I (.\Start\stm32f10x.h)(0x4D783CB4)
 I (.\Start\core_cm3.h)(0x4D523B58)
 I (D:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599ECD2E)
@@ -1662,7 +1658,7 @@ I (.\Library\inc\misc.h)(0x4D783BB4)
 I (D:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599ECD2C)
 I (HAL_Hardware_Driver_Layer\hal_gpio.h)(0x69F05F17)
 I (D:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x599ECD2E)
-F (.\HAL_Hardware_Driver_Layer\hal_uart.h)(0x69B7FAB5)()
+F (.\HAL_Hardware_Driver_Layer\hal_uart.h)(0x6A27DB5A)()
 F (.\HAL_Hardware_Driver_Layer\hal_hard_i2c.c)(0x69B8270C)(--c99 -c --cpu Cortex-M3 -g -O1 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\Library\inc -I .\Library\src -I .\System -I .\Hardware -I .\FreeRTOS -I .\FreeRTOS\include -I .\FreeRTOS\portable -I .\FreeRTOS\source -I .\FreeRTOS\portable\ARM_CM3 -I .\BSP_Board_Support_Package -I .\DD_Device_Driver -I .\HAL_Hardware_Driver_Layer -I .\FSM -I .\Motion_driver-ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-D__UVISION_VERSION="542" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_DMP -DMPL_LOG_NDEBUG="1" -DEMPL -DMPU6050 -DEMPL_TARGET_STM32F1-o .\objects\hal_hard_i2c.o --omf_browse .\objects\hal_hard_i2c.crf --depend .\objects\hal_hard_i2c.d)
 I (HAL_Hardware_Driver_Layer\hal_hard_i2c.h)(0x69B7F2B4)
 I (.\Start\stm32f10x.h)(0x4D783CB4)
@@ -1728,7 +1724,7 @@ I (.\Library\inc\misc.h)(0x4D783BB4)
 F (.\HAL_Hardware_Driver_Layer\hal_exti.h)(0x69B7F2B4)()
 F (.\HAL_Hardware_Driver_Layer\hal_uart_dma.c)(0x69BA106C)(--c99 -c --cpu Cortex-M3 -g -O1 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\Library\inc -I .\Library\src -I .\System -I .\Hardware -I .\FreeRTOS -I .\FreeRTOS\include -I .\FreeRTOS\portable -I .\FreeRTOS\source -I .\FreeRTOS\portable\ARM_CM3 -I .\BSP_Board_Support_Package -I .\DD_Device_Driver -I .\HAL_Hardware_Driver_Layer -I .\FSM -I .\Motion_driver-ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-D__UVISION_VERSION="542" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_DMP -DMPL_LOG_NDEBUG="1" -DEMPL -DMPU6050 -DEMPL_TARGET_STM32F1-o .\objects\hal_uart_dma.o --omf_browse .\objects\hal_uart_dma.crf --depend .\objects\hal_uart_dma.d)
 I (HAL_Hardware_Driver_Layer\hal_uart_dma.h)(0x69BA106C)
-I (HAL_Hardware_Driver_Layer\hal_uart.h)(0x69B7FAB5)
+I (HAL_Hardware_Driver_Layer\hal_uart.h)(0x6A27DB5A)
 I (.\Start\stm32f10x.h)(0x4D783CB4)
 I (.\Start\core_cm3.h)(0x4D523B58)
 I (D:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599ECD2E)
@@ -1836,43 +1832,6 @@ I (D:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599ECD2E)
 I (DD_Device_Driver\dev_ssd1306_font.h)(0x69930FD5)
 F (.\DD_Device_Driver\dev_ssd1306.h)(0x69930F5D)()
 F (.\DD_Device_Driver\dev_ssd1306_font.h)(0x69930FD5)()
-F (.\DD_Device_Driver\dev_mpu6050.c)(0x69BA5682)(--c99 -c --cpu Cortex-M3 -g -O1 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\Library\inc -I .\Library\src -I .\System -I .\Hardware -I .\FreeRTOS -I .\FreeRTOS\include -I .\FreeRTOS\portable -I .\FreeRTOS\source -I .\FreeRTOS\portable\ARM_CM3 -I .\BSP_Board_Support_Package -I .\DD_Device_Driver -I .\HAL_Hardware_Driver_Layer -I .\FSM -I .\Motion_driver-ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-D__UVISION_VERSION="542" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_DMP -DMPL_LOG_NDEBUG="1" -DEMPL -DMPU6050 -DEMPL_TARGET_STM32F1-o .\objects\dev_mpu6050.o --omf_browse .\objects\dev_mpu6050.crf --depend .\objects\dev_mpu6050.d)
-I (DD_Device_Driver\dev_mpu6050.h)(0x69BA47A4)
-I (D:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599ECD2E)
-I (.\Motion_driver\inv_mpu.h)(0x69B82B74)
-I (.\Motion_driver\inv_mpu_dmp_motion_driver.h)(0x69B82B74)
-I (D:\Keil_v5\ARM\ARMCC\include\math.h)(0x599ECD2E)
-I (D:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x599ECD2C)
-I (.\HAL_Hardware_Driver_Layer\hal_uart.h)(0x69B7FAB5)
-I (.\Start\stm32f10x.h)(0x4D783CB4)
-I (.\Start\core_cm3.h)(0x4D523B58)
-I (.\Start\system_stm32f10x.h)(0x4D783CAA)
-I (.\User\stm32f10x_conf.h)(0x4D99A59E)
-I (.\Library\inc\stm32f10x_adc.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_bkp.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_can.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_cec.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_crc.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_dac.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_dbgmcu.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_dma.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_exti.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_flash.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_fsmc.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_gpio.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_i2c.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_iwdg.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_pwr.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_rcc.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_rtc.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_sdio.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_spi.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_tim.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_usart.h)(0x4D783BB4)
-I (.\Library\inc\stm32f10x_wwdg.h)(0x4D783BB4)
-I (.\Library\inc\misc.h)(0x4D783BB4)
-I (D:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599ECD2C)
-F (.\DD_Device_Driver\dev_mpu6050.h)(0x69BA47A4)()
 F (.\DD_Device_Driver\dev_dht11.c)(0x69F05EEE)(--c99 -c --cpu Cortex-M3 -g -O1 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\Library\inc -I .\Library\src -I .\System -I .\Hardware -I .\FreeRTOS -I .\FreeRTOS\include -I .\FreeRTOS\portable -I .\FreeRTOS\source -I .\FreeRTOS\portable\ARM_CM3 -I .\BSP_Board_Support_Package -I .\DD_Device_Driver -I .\HAL_Hardware_Driver_Layer -I .\FSM -I .\Motion_driver-ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-D__UVISION_VERSION="542" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_DMP -DMPL_LOG_NDEBUG="1" -DEMPL -DMPU6050 -DEMPL_TARGET_STM32F1-o .\objects\dev_dht11.o --omf_browse .\objects\dev_dht11.crf --depend .\objects\dev_dht11.d)
 I (DD_Device_Driver\dev_dht11.h)(0x69EE07AF)
 I (D:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599ECD2E)
@@ -1895,10 +1854,9 @@ I (D:\Keil_v5\ARM\ARMCC\include\string.h)(0x599ECD2C)
 I (D:\Keil_v5\ARM\ARMCC\include\math.h)(0x599ECD2E)
 I (Motion_driver\inv_mpu.h)(0x69B82B74)
 I (Motion_driver\inv_mpu_dmp_motion_driver.h)(0x69B82B74)
-I (.\BSP_Board_Support_Package\bsp_mpu6050.h)(0x69DDD07A)
-I (.\DD_Device_Driver\dev_mpu6050.h)(0x69BA47A4)
+I (.\BSP_Board_Support_Package\bsp_mpu6050.h)(0x6A27DCEC)
 F (.\Motion_driver\inv_mpu.h)(0x69B82B74)()
-F (.\Motion_driver\inv_mpu_dmp_motion_driver.c)(0x69B82C62)(--c99 -c --cpu Cortex-M3 -g -O1 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\Library\inc -I .\Library\src -I .\System -I .\Hardware -I .\FreeRTOS -I .\FreeRTOS\include -I .\FreeRTOS\portable -I .\FreeRTOS\source -I .\FreeRTOS\portable\ARM_CM3 -I .\BSP_Board_Support_Package -I .\DD_Device_Driver -I .\HAL_Hardware_Driver_Layer -I .\FSM -I .\Motion_driver-ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-D__UVISION_VERSION="542" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_DMP -DMPL_LOG_NDEBUG="1" -DEMPL -DMPU6050 -DEMPL_TARGET_STM32F1-o .\objects\inv_mpu_dmp_motion_driver.o --omf_browse .\objects\inv_mpu_dmp_motion_driver.crf --depend .\objects\inv_mpu_dmp_motion_driver.d)
+F (.\Motion_driver\inv_mpu_dmp_motion_driver.c)(0x6A27DBD4)(--c99 -c --cpu Cortex-M3 -g -O1 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\Library\inc -I .\Library\src -I .\System -I .\Hardware -I .\FreeRTOS -I .\FreeRTOS\include -I .\FreeRTOS\portable -I .\FreeRTOS\source -I .\FreeRTOS\portable\ARM_CM3 -I .\BSP_Board_Support_Package -I .\DD_Device_Driver -I .\HAL_Hardware_Driver_Layer -I .\FSM -I .\Motion_driver-ID:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.4.1\Device\Include-D__UVISION_VERSION="542" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DSTM32F10X_MD -DUSE_DMP -DMPL_LOG_NDEBUG="1" -DEMPL -DMPU6050 -DEMPL_TARGET_STM32F1-o .\objects\inv_mpu_dmp_motion_driver.o --omf_browse .\objects\inv_mpu_dmp_motion_driver.crf --depend .\objects\inv_mpu_dmp_motion_driver.d)
 I (D:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x599ECD2C)
 I (D:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599ECD2E)
 I (D:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x599ECD2C)
@@ -1908,5 +1866,5 @@ I (Motion_driver\inv_mpu.h)(0x69B82B74)
 I (Motion_driver\inv_mpu_dmp_motion_driver.h)(0x69B82B74)
 I (Motion_driver\dmpKey.h)(0x69B82A89)
 I (Motion_driver\dmpmap.h)(0x69B82A89)
-I (.\DD_Device_Driver\dev_mpu6050.h)(0x69BA47A4)
+I (.\BSP_Board_Support_Package\bsp_mpu6050.h)(0x6A27DCEC)
 F (.\Motion_driver\inv_mpu_dmp_motion_driver.h)(0x69B82B74)()

@@ -495,36 +495,30 @@ void Motor_FSM_Setup(fsm_t* fsm) {
 
 /* ================= 电机任务 ================= */
 
+/* ================= 电机任务 ================= */
 void Motor_FSM_task(void *pvParameters){
-    // 1. 设置电机 FSM (绑定转换表、订阅总线事件)
-    // 这里的 Setup 内部调用了 event_bus_subscribe
     Motor_FSM_Setup(&g_Motor_fsm);
-		// 在此处异步初始化传感器。此处的阻塞只会挂起电机任务，OLED与网络任务正常运行。
-		BSP_MPU6050_Init();
-	
-    const TickType_t xFrequency = pdMS_TO_TICKS(20); // 20ms 周期，保证舵机控制平滑
-    TickType_t xLastWakeTime = xTaskGetTickCount();
-		while(1) {
-					// --- 读取 MPU6050 姿态数据 ---
-					// 检查底层 EXTI 中断是否将数据准备就绪标志置位
-					if (BSP_MPU6050_IsWorking()) {
-						if (BSP_MPU6050_IsDataReady()) {
-							BSP_MPU6050_ClearDataReady(); // 立即清除标志位
-							// 从 FIFO 读取解算后的数据
-							if (BSP_MPU6050_GetData(&g_imu_data) == 0) {
-									// 如果需要调试，可以取消下面这行的注释打印数据
-									//printf("%.1f,%.1f,%.1f\r\n", g_imu_data.yaw, g_imu_data.pitch, g_imu_data.roll);
-									
-								
-								
-									// SYS_LOG("MOTO", "IMU: %.1f,%.1f,%.1f\n", g_imu_data.yaw, g_imu_data.pitch, g_imu_data.roll);
-									// 【预留接口】你可以将 g_imu_data 的数据通过 fsm_push_event 压入状态机，
-									// 或者直接给 PID 控制器使用。
-								}
-						}
-					}
-			fsm_run(&g_Motor_fsm);
-			vTaskDelayUntil(&xLastWakeTime, xFrequency);
+    
+    // 异步初始化传感器，阻塞电机任务但不影响其他系统任务
+    BSP_MPU6050_Init();
+    
+    while(1) {
+        // 【物理级优化】丢弃传统的 vTaskDelayUntil 轮询。
+        // 电机任务进入阻塞态，释放 100% CPU，死等 PB12_EXTI 中断唤醒。
+        // 超时设为 50ms (防止传感器断联导致状态机死锁)。
+        // 因 DMP 设置为 100Hz，正常情况下每 10ms 会被完美唤醒一次。
+        uint32_t is_notified = ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(50));
+        
+        if (is_notified > 0 && BSP_MPU6050_IsWorking()) {
+            // 被物理中断唤醒：立即提取底层解算好的最新欧拉角
+            if (BSP_MPU6050_GetData(&g_imu_data) == 0) {
+                // 在获取到最新绝对姿态的瞬间，立刻驱动闭环系统运算输出 PWM
+                fsm_run(&g_Motor_fsm);
+            }
+        } else {
+            // 断联保护：若中断丢失触发 50ms 超时，依靠盲走维持 FSM 基本运转
+            fsm_run(&g_Motor_fsm);
+        }
     }
 }
 

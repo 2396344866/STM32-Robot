@@ -63,7 +63,6 @@
 ".\objects\dev_led.o"
 ".\objects\dev_servo.o"
 ".\objects\dev_ssd1306.o"
-".\objects\dev_mpu6050.o"
 ".\objects\dev_dht11.o"
 ".\objects\dev_mq2.o"
 ".\objects\dev_hcsr04.o"

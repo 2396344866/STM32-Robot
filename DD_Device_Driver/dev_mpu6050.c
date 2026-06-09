@@ -104,7 +104,6 @@ int Dev_MPU6050_Read_DMP(MPU6050_Data_t *out_data) {
     int ret;
     uint8_t has_valid_data = 0;
 		uint8_t timeout_cnt = 10;
-    
     // 采用循环读取(Drain)策略。若因RTOS调度延迟导致FIFO堆积多帧数据，
     // 持续读取直至FIFO清空，仅提取具备最高时效性的最新一帧姿态数据。
     do {
@@ -134,6 +133,5 @@ int Dev_MPU6050_Read_DMP(MPU6050_Data_t *out_data) {
         out_data->roll = ypr[2];
         return 0; 
     }
-    
     return -1; 
 }

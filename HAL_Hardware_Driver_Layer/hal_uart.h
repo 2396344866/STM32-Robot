@@ -19,6 +19,7 @@ uint8_t HAL_UART_ReceiveByte(UART_Handle_t* hUart);
 
 // 中断相关辅助 (可选，根据需要扩展)
 void HAL_UART_EnableIRQ(UART_Handle_t* hUart, uint8_t Priority);
-void MPL_LOGI(const char* fmt, ...);
-void MPL_LOGE(const char* fmt, ...);
+//void MPL_LOGI(const char* fmt, ...);
+//void MPL_LOGE(const char* fmt, ...);
 #endif
+

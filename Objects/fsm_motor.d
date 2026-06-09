@@ -16,7 +16,6 @@
 .\objects\fsm_motor.o: .\FreeRTOS\include\task.h
 .\objects\fsm_motor.o: .\FreeRTOS\include\list.h
 .\objects\fsm_motor.o: .\BSP_Board_Support_Package\bsp_mpu6050.h
-.\objects\fsm_motor.o: .\DD_Device_Driver\dev_mpu6050.h
 .\objects\fsm_motor.o: FSM\event_bus.h
 .\objects\fsm_motor.o: FSM\sys_events.h
 .\objects\fsm_motor.o: .\HAL_Hardware_Driver_Layer\hal_pwm.h

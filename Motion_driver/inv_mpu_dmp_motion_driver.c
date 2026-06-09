@@ -34,7 +34,7 @@
  * get_ms(unsigned long *count)
  */
 #if defined EMPL_TARGET_STM32F1
-#include "dev_mpu6050.h"
+#include "bsp_mpu6050.h"
    
 #define i2c_write   Sensors_I2C_WriteRegister
 #define i2c_read    Sensors_I2C_ReadRegister
