@@ -4,12 +4,6 @@
 **项目周期**：2025.10 - 2026.06
 **仓库地址**：https://github.com/2396344866/STM32-Robot.git
 
-![App Control Test](./product_image/app_test.png)
-
-![Forward Posture Test](./product_image/forward_posture_test.png)
-
-![Left Rotation Test](./product_image/left_rotation_test.png)
-
 ## 一、 项目简介
 本项目基于 STM32 与 FreeRTOS 搭建分布式嵌入式控制系统。系统实现四足机器人在复杂地形下的稳定行走。软件架构完成严格的分层解耦。系统执行多任务并发调度、IMU 姿态解算与闭环步态控制。机器人最终实现多步态平稳切换与运动稳定控制。
 
@@ -36,7 +30,11 @@
 
 单片机最终实现了小于 20ms 的控制响应速度。系统不需要昂贵的算力也能在复杂地形中快速纠偏。
 
-![System Architecture](./product_image/system_architecture.png)
+![App Control Test](./product_image/app_test.png)
+
+![Forward Posture Test](./product_image/forward_posture_test.png)
+
+![Left Rotation Test](./product_image/left_rotation_test.png)
 
 ### 2. 软硬件深层解耦的事件驱动调控网络
 
