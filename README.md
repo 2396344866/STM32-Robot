@@ -1,21 +1,21 @@
 # 面向家庭服务的四足机器人分布式系统（STM32-Robot）
 
 **项目定位**：面向复杂地形的高频自适应姿态控制与分布式调度系统
-**项目周期**：2025.10 - 2026.05
+**项目周期**：2025.10 - 2026.06
 **仓库地址**：https://github.com/2396344866/STM32-Robot.git
 
-![实物与仿真演示1](product_image/APP操作测试图片.png)
+![App Control Test](./product_image/app_test.png)
 
-![实物与仿真演示2](product_image/前进姿态解算测试图片.png)
+![Forward Posture Test](./product_image/forward_posture_test.png)
 
-![实物与仿真演示3](product_image/左旋转姿态解算测试图片.png)
+![Left Rotation Test](./product_image/left_rotation_test.png)
 
 ## 一、 项目简介
 本项目基于 STM32 与 FreeRTOS 搭建分布式嵌入式控制系统。系统实现四足机器人在复杂地形下的稳定行走。软件架构完成严格的分层解耦。系统执行多任务并发调度、IMU 姿态解算与闭环步态控制。机器人最终实现多步态平稳切换与运动稳定控制。
 
 ## 二、 系统架构与硬件构成
 
-![架构分层图](product_image/系统架构图.png)
+![System Architecture](./product_image/system_architecture.png)
 
 控制系统由以下独立模块构成：
 1. **主控中枢**：STM32F103 运行 FreeRTOS。事件总线架构作为核心中枢进行并发调度。系统通过接口与外围模块连接。
@@ -27,22 +27,6 @@
 
 ## 三、 核心技术实现
 
-你不应该在简历或 GitHub 仓库中保留“本项目为个人架构练习”和“不是完整的成品机器人”这两句话。
-
-企业在秋招中寻找能够解决实际商业问题的人才。这两句话会极大降低你项目的工程价值与商业转化潜力。你需要将项目定位为“面向家庭服务场景的控制系统原型验证（POC）”。这种表述证明了你的开发重点是验证核心算法和系统架构的可靠性。这展示了你将底层技术转化为实际商业应用的能力。
-
-下面是我为你重构的 README 核心技术板块内容。我使用了简短的句子，并确保主语清晰。
-
----
-
-# 四足仿生蜘蛛机器人控制系统 (STM32-Robot)
-
-**项目定位**：面向复杂地形的高频自适应姿态控制与分布式调度系统原型。
-**项目周期**：2025.10 - 2025.12
-**仓库地址**：[https://github.com/2396344866/STM32-Robot.git](https://github.com/2396344866/STM32-Robot.git)
-
-## 核心技术实现
-
 ### 1. 基于双频解耦的运动学与位姿补偿算法
 
 微控制器的算力极其有限。单片机无法实时运行高时间复杂度的矩阵逆运动学解算。系统构建了频率解耦的半动态位姿补偿框架。系统将控制逻辑拆分为两个独立的执行轴。
@@ -51,6 +35,8 @@
 * **姿态补偿控制轴（20ms）**：系统采用奇异点包裹算法与 PD 控制律。系统通过最短路径取模操作，消除了欧拉角翻转导致的积分爆炸。系统将 DMP 库解算的 IMU 倾角误差直接映射为关节的线性位移。算法的时间复杂度从 $O(n^3)$ 降低到了 $O(1)$。
 
 单片机最终实现了小于 20ms 的控制响应速度。系统不需要昂贵的算力也能在复杂地形中快速纠偏。
+
+![System Architecture](./product_image/system_architecture.png)
 
 ### 2. 软硬件深层解耦的事件驱动调控网络
 
@@ -73,6 +59,8 @@
 
 系统通过切断静态闲置消耗，将整机动态续航时长提升了 45%。
 
+![Low Power Standby Test](./product_image/low_power_standby_test.png)
+
 ---
 
 ### README
@@ -82,7 +70,7 @@
 **Project Positioning**: Control system prototype validation for home service scenarios.
 **Project Info**
 
-* **Time**: 2025.10 - 2025.12
+* **Time**: 2025.10 - 2026.06
 * **Platform**: STM32 + FreeRTOS
 
 ## Key Features
