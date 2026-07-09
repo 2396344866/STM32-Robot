@@ -69,7 +69,7 @@ graph TD
 | `event_bus_subscribe(fsm, event_id)` | 状态机订阅指定事件 ID |
 | `event_bus_publish(event_id, param)` | 广播事件，所有订阅者都会收到 |
 
-容量限制： 由 sys_config.h 中的 BUS_MAX_SUBS 定义（当前为 30，为节省 RAM 已精简）。订阅超限会静默失败。
+容量限制： 由 sys_config.h 中的 BUS_MAX_SUBS 定义。订阅超限会静默失败。
 
 ### 2.3 系统事件定义 (`sys_events.h`)--可增删查改
 
@@ -90,8 +90,8 @@ graph TD
 
 ```c
 #define USE_FREERTOS              // 启用 FreeRTOS 支持
-#define BUS_MAX_SUBS 32           // 事件总线最大订阅数
-#define ENABLE_DEBUG_PRINT 0      // 全局调试打印开关（1 开，0 关）
+#define BUS_MAX_SUBS 30           // 事件总线最大订阅数
+#define ENABLE_DEBUG_PRINT 1      // 全局调试打印开关（1 开，0 关）
 
 // FreeRTOS 模式下提供的工具宏
 #define FSM_GET_TICK()       xTaskGetTickCount()
@@ -564,6 +564,6 @@ graph TD
 
 ---
 
-> **版本记录：** V1.0  
+> **版本记录：** V1.11  
 > **适用硬件：** STM32F103 + ESP8266 + MPU6050 + SSD1306  
 > **依赖：** FreeRTOS, STM32 标准外设库, INV_MPU/DMP 库

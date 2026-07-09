@@ -8,7 +8,7 @@
 #include "fsm_key.h"
 
 #define Main_System_QUEUE_SIZE 16
-#define LOCAL_SOURCE 1
+#define LOCAL_SOURCE 1 
 #define APP_SOURCE   2
 #define DECODE_SOURCE(param) ((uint8_t)((param) >> 16))
 #define DECODE_EVT(param)    ((uint16_t)((param) & 0xFFFF))
@@ -208,7 +208,7 @@ static const fsm_transition_t Main_System_transitions[] = {
     { STATE_IDLE,       EVT_KEY1_SHORT_PRESS, STATE_MOTOR_CTRL, NULL, NULL },
     { STATE_IDLE,       EVT_KEY2_SHORT_PRESS, STATE_MOTOR_CTRL, NULL, NULL },
 		{ STATE_MOTOR_CTRL, EVT_TIMEOUT, STATE_IDLE, NULL, NULL },
-		// -------------- 新增：避障抢占与解除逻辑 ---------------
+		// -------------- 避障抢占与解除逻辑 ---------------
     // 任何运行状态收到警告，立即切入 BLOCKED 状态
     { STATE_IDLE,       EVT_WARN_OBSTACLE, STATE_BLOCKED, NULL, NULL },
     { STATE_MOTOR_CTRL, EVT_WARN_OBSTACLE, STATE_BLOCKED, NULL, NULL },
@@ -257,7 +257,7 @@ void Main_System_fsm_setup(fsm_t* fsm) {
     event_bus_subscribe(fsm, EVT_MOTOR_RIGHT);
     event_bus_subscribe(fsm, EVT_MOTOR_ROT_L);
     event_bus_subscribe(fsm, EVT_MOTOR_ROT_R);
-		// 新增：订阅安全事件
+		// 订阅安全事件
     event_bus_subscribe(fsm, EVT_WARN_OBSTACLE);
     event_bus_subscribe(fsm, EVT_OBSTACLE_CLEARED);
     on_enter_init(fsm, &Main_System_ctx);

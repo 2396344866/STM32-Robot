@@ -184,7 +184,6 @@ void fsm_run(fsm_t* fsm) {
                 break;  // 找到匹配规则，停止遍历
             }
         }
-        
         // 如果没有找到任何匹配的迁移规则，且启用了调试信息，则输出错误
         if (!transitioned && fsm->debug_info) {
             printf("Unhandled evt %d in state %d\n", evt.id, fsm->current_state);

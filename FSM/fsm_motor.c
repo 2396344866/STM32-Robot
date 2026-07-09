@@ -200,190 +200,38 @@ DEFINE_SEQ(SEQ_STOP,     DATA_STAND);
 // --- 静态上下文 ---
 static fsm_event_t motor_evt_buf[16];
 static motor_ctx_t motor_ctx;
-		
-// 硬件抽象层：一键设置所有舵机
-static void apply_pose(const pose_frame_t* frame) {
-    BSP_Servo_Set_Left_Top_Knee(    frame->angles[ID_LT_KNEE]);
-    BSP_Servo_Set_Left_Top_Hip(     frame->angles[ID_LT_HIP]);
-    BSP_Servo_Set_Right_Top_Knee(   frame->angles[ID_RT_KNEE]);
-    BSP_Servo_Set_Right_Top_Hip(    frame->angles[ID_RT_HIP]);
-    BSP_Servo_Set_Right_Bottom_Knee(frame->angles[ID_RB_KNEE]);
-    BSP_Servo_Set_Right_Bottom_Hip( frame->angles[ID_RB_HIP]);
-    BSP_Servo_Set_Left_Bottom_Knee( frame->angles[ID_LB_KNEE]);
-    BSP_Servo_Set_Left_Bottom_Hip(  frame->angles[ID_LB_HIP]);
-//	LOG_RAW("%d,%d,%d,%d,%d,%d,%d,%d\n", 
-//						frame->angles[ID_LT_KNEE], frame->angles[ID_LT_HIP],
-//						frame->angles[ID_RT_KNEE], frame->angles[ID_RT_HIP],
-//						frame->angles[ID_RB_KNEE], frame->angles[ID_RB_HIP],
-//						frame->angles[ID_LB_KNEE], frame->angles[ID_LB_HIP]
-//				);
-
-
-
-}
-// 通用数据加载器 (Enter Callback)
-static void load_sequence(fsm_t* fsm, const gait_sequence_t* seq) {
-    motor_ctx.current_seq = seq;
-    motor_ctx.seq_step = 0;
-    motor_ctx.last_tick = FSM_GET_TICK();
-    // 立即执行第一帧，提升响应速度
-    if (seq && seq->frames) {
-        apply_pose(&seq->frames[0]);
-    }
-}
-
-// 各种状态的 Enter 回调包装
-static void enter_stop(fsm_t* f, void* a)     { load_sequence(f, &SEQ_STOP); }
-static void enter_forward(fsm_t* f, void* a)  { load_sequence(f, &SEQ_FORWARD); }
-static void enter_backward(fsm_t* f, void* a) { load_sequence(f, &SEQ_BACKWARD); }
-static void enter_left(fsm_t* f, void* a)     { load_sequence(f, &SEQ_LEFT); }
-static void enter_right(fsm_t* f, void* a)    { load_sequence(f, &SEQ_RIGHT); }
-static void enter_rot_l(fsm_t* f, void* a)    { load_sequence(f, &SEQ_ROT_L); }
-static void enter_rot_r(fsm_t* f, void* a)    { load_sequence(f, &SEQ_ROT_R); }
-
-// 通用轮询器 (Poll Callback)
-static void on_poll_gait(fsm_t* fsm, void* arg) {
-    motor_ctx_t* ctx = (motor_ctx_t*)arg;
-    const gait_sequence_t* seq = ctx->current_seq;
-
-    if (!seq || !seq->frames) return;
-
-    // 检查时间间隔
-    TickType_t now = FSM_GET_TICK();
-    if ((now - ctx->last_tick) < FSM_MS_TO_TICKS(ACTION_INTERVAL_MS)) return;
-
-    // 指向下一帧
-    ctx->seq_step++;
-    
-    // 循环播放逻辑
-    if (ctx->seq_step >= seq->frame_count) {
-        if (fsm->current_state == STATE_MOTOR_STOP) {
-            // 如果是停止状态，停在最后一帧 (通常是全90度)
-            ctx->seq_step = seq->frame_count - 1; 
-        } else {
-            // 运动状态，循环播放
-            ctx->seq_step = 0; 
-        }
-    }
-
-    // 执行动作
-    apply_pose(&seq->frames[ctx->seq_step]);
-    
-    ctx->last_tick = now;
-}
-
-
 //// ***************************************************************************
-////   下面为新版本PID PD算法用于姿态外环
+////    上面为旧版本无 PD算法
 //// ***************************************************************************
 
-//// --- 静态上下文 ---
-//static fsm_event_t motor_evt_buf[16];
-//static motor_ctx_t motor_ctx;
+//// 硬件抽象层：一键设置所有舵机
+//static void apply_pose(const pose_frame_t* frame) {
+//    BSP_Servo_Set_Left_Top_Knee(    frame->angles[ID_LT_KNEE]);
+//    BSP_Servo_Set_Left_Top_Hip(     frame->angles[ID_LT_HIP]);
+//    BSP_Servo_Set_Right_Top_Knee(   frame->angles[ID_RT_KNEE]);
+//    BSP_Servo_Set_Right_Top_Hip(    frame->angles[ID_RT_HIP]);
+//    BSP_Servo_Set_Right_Bottom_Knee(frame->angles[ID_RB_KNEE]);
+//    BSP_Servo_Set_Right_Bottom_Hip( frame->angles[ID_RB_HIP]);
+//    BSP_Servo_Set_Left_Bottom_Knee( frame->angles[ID_LB_KNEE]);
+//    BSP_Servo_Set_Left_Bottom_Hip(  frame->angles[ID_LB_HIP]);
+////	LOG_RAW("%d,%d,%d,%d,%d,%d,%d,%d\n", 
+////						frame->angles[ID_LT_KNEE], frame->angles[ID_LT_HIP],
+////						frame->angles[ID_RT_KNEE], frame->angles[ID_RT_HIP],
+////						frame->angles[ID_RB_KNEE], frame->angles[ID_RB_HIP],
+////						frame->angles[ID_LB_KNEE], frame->angles[ID_LB_HIP]
+////				);
 
-///* ============================================================
-// * 闭环控制算法参数 (PID & 限位)
-// * ============================================================ */
-//// 目标基准姿态 (水平面)
-//#define TARGET_PITCH -3.7f
-//#define TARGET_ROLL  178.2f
 
-//// PD 控制器增益参数
-//#define KP_PITCH 0.4f
-//#define KD_PITCH 0.15f
-//#define KP_ROLL  0.4f
-//#define KD_ROLL  0.15f
 
-//// 硬件安全限位
-//#define KNEE_MAX 135.0f
-//#define KNEE_MIN 45.0f
-
-//// 角度限幅宏
-//#define CLAMP(x, min, max) (((x) < (min)) ? (min) : (((x) > (max)) ? (max) : (x)))
-
-//// PID 历史状态
-//static float last_err_pitch = 0.0f;
-//static float last_err_roll = 0.0f;
-
-///* ============================================================
-// * 底层数学工具：角度包裹 (Angle Wrap)
-// * 解决倒置安装导致的 180度 -> -180度 奇异点跃变
-// * ============================================================ */
-//static float wrap_180(float angle) {
-//    while (angle > 180.0f) angle -= 360.0f;
-//    while (angle < -180.0f) angle += 360.0f;
-//    return angle;
 //}
-
-///* ============================================================
-// * 核心执行器：带姿态前馈补偿的位姿下发
-// * ============================================================ */
-//static void apply_pose_with_pid(const pose_frame_t* frame) {
-//    // 1. 提取当前原始欧拉角
-//    float current_pitch = g_imu_data.pitch;
-//    float current_roll = g_imu_data.roll;
-
-//    // 2. 计算连续最短路径误差
-//    float err_pitch = wrap_180(TARGET_PITCH - current_pitch);
-//    float err_roll = wrap_180(TARGET_ROLL - current_roll);
-
-//    // 3. PD 补偿量计算 (略去积分项防震荡)
-//    float u_pitch = (KP_PITCH * err_pitch) + KD_PITCH * (err_pitch - last_err_pitch);
-//    float u_roll  = (KP_ROLL * err_roll)   + KD_ROLL  * (err_roll - last_err_roll);
-
-//    last_err_pitch = err_pitch;
-//    last_err_roll = err_roll;
-
-//    // 4. 支撑力矩需求分配
-//    // u_pitch > 0: 机头下沉，需要前腿增加支撑力(+)，后腿减小支撑力(-)
-//    // u_roll  > 0: 机身左倾，需要左腿增加支撑力(+)，右腿减小支撑力(-)
-//    float d_LT =  u_pitch + u_roll;  // 左前支撑力需求
-//    float d_RT =  u_pitch - u_roll;  // 右前支撑力需求
-//    float d_LB = -u_pitch + u_roll;  // 左后支撑力需求
-//    float d_RB = -u_pitch - u_roll;  // 右后支撑力需求
-
-//    // 5. 逆运动学极性映射 (关节角度解算)
-//    // 根据步态表：LT_K 与 RB_K 抬腿角度为 55°，增加支撑力需增大角度 (+)
-//    // 根据步态表：RT_K 与 LB_K 抬腿角度为 125°，增加支撑力需减小角度 (-)
-//    float lt_k_out = frame->angles[ID_LT_KNEE] + d_LT;
-//    float rt_k_out = frame->angles[ID_RT_KNEE] - d_RT;
-//    float lb_k_out = frame->angles[ID_LB_KNEE] - d_LB;
-//    float rb_k_out = frame->angles[ID_RB_KNEE] + d_RB;
-
-//    // 6. 硬件安全边界钳位
-//    lt_k_out = CLAMP(lt_k_out, KNEE_MIN, KNEE_MAX);
-//    rt_k_out = CLAMP(rt_k_out, KNEE_MIN, KNEE_MAX);
-//    lb_k_out = CLAMP(lb_k_out, KNEE_MIN, KNEE_MAX);
-//    rb_k_out = CLAMP(rb_k_out, KNEE_MIN, KNEE_MAX);
-
-//    // 7. 写入硬件寄存器 (髋关节负责步距，膝关节负责高度，仅补偿膝关节)
-//    BSP_Servo_Set_Left_Top_Knee(lt_k_out);
-//    BSP_Servo_Set_Right_Top_Knee(rt_k_out);
-//    BSP_Servo_Set_Left_Bottom_Knee(lb_k_out);
-//    BSP_Servo_Set_Right_Bottom_Knee(rb_k_out);
-//    
-//    BSP_Servo_Set_Left_Top_Hip(frame->angles[ID_LT_HIP]);
-//    BSP_Servo_Set_Right_Top_Hip(frame->angles[ID_RT_HIP]);
-//    BSP_Servo_Set_Left_Bottom_Hip(frame->angles[ID_LB_HIP]);
-//    BSP_Servo_Set_Right_Bottom_Hip(frame->angles[ID_RB_HIP]);
-//}
-
-//// ============================================================
-//// 序列定义与管理
-//// ============================================================ 
 //// 通用数据加载器 (Enter Callback)
 //static void load_sequence(fsm_t* fsm, const gait_sequence_t* seq) {
 //    motor_ctx.current_seq = seq;
 //    motor_ctx.seq_step = 0;
 //    motor_ctx.last_tick = FSM_GET_TICK();
-//    
-//    // 初始化 PID 历史状态，防止动作切换瞬间的微分突变
-//    last_err_pitch = wrap_180(TARGET_PITCH - g_imu_data.pitch);
-//    last_err_roll  = wrap_180(TARGET_ROLL - g_imu_data.roll);
-//    
-//    // 立即基于闭环机制执行第一帧
+//    // 立即执行第一帧，提升响应速度
 //    if (seq && seq->frames) {
-//        apply_pose_with_pid(&seq->frames[0]);
+//        apply_pose(&seq->frames[0]);
 //    }
 //}
 
@@ -396,34 +244,192 @@ static void on_poll_gait(fsm_t* fsm, void* arg) {
 //static void enter_rot_l(fsm_t* f, void* a)    { load_sequence(f, &SEQ_ROT_L); }
 //static void enter_rot_r(fsm_t* f, void* a)    { load_sequence(f, &SEQ_ROT_R); }
 
-//// ============================================================
-//// 轮询器：频率解耦 (Poll Callback)
-//// ============================================================ 
+//// 通用轮询器 (Poll Callback)
 //static void on_poll_gait(fsm_t* fsm, void* arg) {
 //    motor_ctx_t* ctx = (motor_ctx_t*)arg;
 //    const gait_sequence_t* seq = ctx->current_seq;
 
 //    if (!seq || !seq->frames) return;
 
+//    // 检查时间间隔
 //    TickType_t now = FSM_GET_TICK();
+//    if ((now - ctx->last_tick) < FSM_MS_TO_TICKS(ACTION_INTERVAL_MS)) return;
+
+//    // 指向下一帧
+//    ctx->seq_step++;
 //    
-//    // 1. 低频切帧：仅当到达步态间隔时，步进到下一帧
-//    if ((now - ctx->last_tick) >= FSM_MS_TO_TICKS(ACTION_INTERVAL_MS)) {
-//        ctx->seq_step++;
-//        
-//        if (ctx->seq_step >= seq->frame_count) {
-//            if (fsm->current_state == STATE_MOTOR_STOP) {
-//                ctx->seq_step = seq->frame_count - 1; 
-//            } else {
-//                ctx->seq_step = 0; 
-//            }
+//    // 循环播放逻辑
+//    if (ctx->seq_step >= seq->frame_count) {
+//        if (fsm->current_state == STATE_MOTOR_STOP) {
+//            // 如果是停止状态，停在最后一帧 (通常是全90度)
+//            ctx->seq_step = seq->frame_count - 1; 
+//        } else {
+//            // 运动状态，循环播放
+//            ctx->seq_step = 0; 
 //        }
-//        ctx->last_tick = now; 
 //    }
 
-//    // 2. 高频外环：以 20ms 的刷新率(与任务周期一致)，实时叠加姿态补偿
-//    apply_pose_with_pid(&seq->frames[ctx->seq_step]);
+//    // 执行动作
+//    apply_pose(&seq->frames[ctx->seq_step]);
+//    
+//    ctx->last_tick = now;
 //}
+
+//// ***************************************************************************
+////   上面为旧版本无 PD算法
+//// ***************************************************************************
+
+//// ***************************************************************************
+////   下面为新版本PID PD算法用于姿态外环
+//// ***************************************************************************
+
+// --- 静态上下文 ---
+static fsm_event_t motor_evt_buf[16];
+static motor_ctx_t motor_ctx;
+
+/* ============================================================
+ * 闭环控制算法参数 (PID & 限位)
+ * ============================================================ */
+// 目标基准姿态 (水平面)
+#define TARGET_PITCH -3.7f
+#define TARGET_ROLL  178.2f
+
+// PD 控制器增益参数
+#define KP_PITCH 0.4f
+#define KD_PITCH 0.15f
+#define KP_ROLL  0.4f
+#define KD_ROLL  0.15f
+
+// 硬件安全限位
+#define KNEE_MAX 135.0f
+#define KNEE_MIN 45.0f
+
+// 角度限幅宏
+#define CLAMP(x, min, max) (((x) < (min)) ? (min) : (((x) > (max)) ? (max) : (x)))
+
+// PID 历史状态
+static float last_err_pitch = 0.0f;
+static float last_err_roll = 0.0f;
+
+/* ============================================================
+ * 底层数学工具：角度包裹 (Angle Wrap)
+ * 解决倒置安装导致的 180度 -> -180度 奇异点跃变
+ * ============================================================ */
+static float wrap_180(float angle) {
+    while (angle > 180.0f) angle -= 360.0f;
+    while (angle < -180.0f) angle += 360.0f;
+    return angle;
+}
+
+/* ============================================================
+ * 核心执行器：带姿态前馈补偿的位姿下发
+ * ============================================================ */
+static void apply_pose_with_pid(const pose_frame_t* frame) {
+    // 1. 提取当前原始欧拉角
+    float current_pitch = g_imu_data.pitch;
+    float current_roll = g_imu_data.roll;
+
+    // 2. 计算连续最短路径误差
+    float err_pitch = wrap_180(TARGET_PITCH - current_pitch);
+    float err_roll = wrap_180(TARGET_ROLL - current_roll);
+
+    // 3. PD 补偿量计算 (略去积分项防震荡)
+    float u_pitch = (KP_PITCH * err_pitch) + KD_PITCH * (err_pitch - last_err_pitch);
+    float u_roll  = (KP_ROLL * err_roll)   + KD_ROLL  * (err_roll - last_err_roll);
+
+    last_err_pitch = err_pitch;
+    last_err_roll = err_roll;
+
+    // 4. 支撑力矩需求分配
+    // u_pitch > 0: 机头下沉，需要前腿增加支撑力(+)，后腿减小支撑力(-)
+    // u_roll  > 0: 机身左倾，需要左腿增加支撑力(+)，右腿减小支撑力(-)
+    float d_LT =  u_pitch + u_roll;  // 左前支撑力需求
+    float d_RT =  u_pitch - u_roll;  // 右前支撑力需求
+    float d_LB = -u_pitch + u_roll;  // 左后支撑力需求
+    float d_RB = -u_pitch - u_roll;  // 右后支撑力需求
+
+    // 5. 逆运动学极性映射 (关节角度解算)
+    // 根据步态表：LT_K 与 RB_K 抬腿角度为 55°，增加支撑力需增大角度 (+)
+    // 根据步态表：RT_K 与 LB_K 抬腿角度为 125°，增加支撑力需减小角度 (-)
+    float lt_k_out = frame->angles[ID_LT_KNEE] + d_LT;
+    float rt_k_out = frame->angles[ID_RT_KNEE] - d_RT;
+    float lb_k_out = frame->angles[ID_LB_KNEE] - d_LB;
+    float rb_k_out = frame->angles[ID_RB_KNEE] + d_RB;
+
+    // 6. 硬件安全边界钳位
+    lt_k_out = CLAMP(lt_k_out, KNEE_MIN, KNEE_MAX);
+    rt_k_out = CLAMP(rt_k_out, KNEE_MIN, KNEE_MAX);
+    lb_k_out = CLAMP(lb_k_out, KNEE_MIN, KNEE_MAX);
+    rb_k_out = CLAMP(rb_k_out, KNEE_MIN, KNEE_MAX);
+
+    // 7. 写入硬件寄存器 (髋关节负责步距，膝关节负责高度，仅补偿膝关节)
+    BSP_Servo_Set_Left_Top_Knee(lt_k_out);
+    BSP_Servo_Set_Right_Top_Knee(rt_k_out);
+    BSP_Servo_Set_Left_Bottom_Knee(lb_k_out);
+    BSP_Servo_Set_Right_Bottom_Knee(rb_k_out);
+    
+    BSP_Servo_Set_Left_Top_Hip(frame->angles[ID_LT_HIP]);
+    BSP_Servo_Set_Right_Top_Hip(frame->angles[ID_RT_HIP]);
+    BSP_Servo_Set_Left_Bottom_Hip(frame->angles[ID_LB_HIP]);
+    BSP_Servo_Set_Right_Bottom_Hip(frame->angles[ID_RB_HIP]);
+}
+
+// ============================================================
+// 序列定义与管理
+// ============================================================ 
+// 通用数据加载器 (Enter Callback)
+static void load_sequence(fsm_t* fsm, const gait_sequence_t* seq) {
+    motor_ctx.current_seq = seq;
+    motor_ctx.seq_step = 0;
+    motor_ctx.last_tick = FSM_GET_TICK();
+    
+    // 初始化 PID 历史状态，防止动作切换瞬间的微分突变
+    last_err_pitch = wrap_180(TARGET_PITCH - g_imu_data.pitch);
+    last_err_roll  = wrap_180(TARGET_ROLL - g_imu_data.roll);
+    
+    // 立即基于闭环机制执行第一帧
+    if (seq && seq->frames) {
+        apply_pose_with_pid(&seq->frames[0]);
+    }
+}
+
+// 各种状态的 Enter 回调包装
+static void enter_stop(fsm_t* f, void* a)     { load_sequence(f, &SEQ_STOP); }
+static void enter_forward(fsm_t* f, void* a)  { load_sequence(f, &SEQ_FORWARD); }
+static void enter_backward(fsm_t* f, void* a) { load_sequence(f, &SEQ_BACKWARD); }
+static void enter_left(fsm_t* f, void* a)     { load_sequence(f, &SEQ_LEFT); }
+static void enter_right(fsm_t* f, void* a)    { load_sequence(f, &SEQ_RIGHT); }
+static void enter_rot_l(fsm_t* f, void* a)    { load_sequence(f, &SEQ_ROT_L); }
+static void enter_rot_r(fsm_t* f, void* a)    { load_sequence(f, &SEQ_ROT_R); }
+
+// ============================================================
+// 轮询器：频率解耦 (Poll Callback)
+// ============================================================ 
+static void on_poll_gait(fsm_t* fsm, void* arg) {
+    motor_ctx_t* ctx = (motor_ctx_t*)arg;
+    const gait_sequence_t* seq = ctx->current_seq;
+
+    if (!seq || !seq->frames) return;
+
+    TickType_t now = FSM_GET_TICK();
+    
+    // 1. 低频切帧：仅当到达步态间隔时，步进到下一帧
+    if ((now - ctx->last_tick) >= FSM_MS_TO_TICKS(ACTION_INTERVAL_MS)) {
+        ctx->seq_step++;
+        
+        if (ctx->seq_step >= seq->frame_count) {
+            if (fsm->current_state == STATE_MOTOR_STOP) {
+                ctx->seq_step = seq->frame_count - 1; 
+            } else {
+                ctx->seq_step = 0; 
+            }
+        }
+        ctx->last_tick = now; 
+    }
+
+    // 2. 高频外环：以 20ms 的刷新率(与任务周期一致)，实时叠加姿态补偿
+    apply_pose_with_pid(&seq->frames[ctx->seq_step]);
+}
 //// ***************************************************************************
 ////   上面为新版本PID PD算法用于姿态外环
 //// ***************************************************************************
@@ -518,7 +524,7 @@ void Motor_FSM_task(void *pvParameters){
 								
 								
 									// SYS_LOG("MOTO", "IMU: %.1f,%.1f,%.1f\n", g_imu_data.yaw, g_imu_data.pitch, g_imu_data.roll);
-									// 【预留接口】你可以将 g_imu_data 的数据通过 fsm_push_event 压入状态机，
+									// 【预留接口】可以将 g_imu_data 的数据通过 fsm_push_event 压入状态机，
 									// 或者直接给 PID 控制器使用。
 								}
 						}
