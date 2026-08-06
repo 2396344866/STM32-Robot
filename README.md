@@ -96,9 +96,10 @@ Indoor service robots require long static battery life. Traditional unconditiona
 
 * **Direct network state binding**: The system abandons the conventional timer wake-up query mode. The working states of temperature, humidity, gas, and light sensors bind directly to the Aliyun MQTT connection state.
 * **Dynamic clock gating trigger**: The main control logic judges the device standby state and network heartbeat in real time. The main state machine publishes a sleep command to the event bus when the device disconnects or enters a low-activity period.
-* **Complete physical-layer blocking**: The microcontroller directly turns off the peripheral clocks of the ADC bus and timers at the physical level after the bottom driver captures the command. The system fundamentally stops invalid data sampling and calculation.
+* **Complete physical-layer blocking**: The microcontroller directly turns off the peripheral clocks of the ADC bus and timers at the physical level after the bottom driver captures the command, and sets the sensor pins to high-impedance to cut static leakage. The system fundamentally stops invalid data sampling and calculation.
 * **Multi-source asynchronous wake-up mechanism**: Local button interrupts and network data idle interrupts maintain asynchronous listening during hardware sleep. Effective interaction can wake up the device at any time.
-The system increases the dynamic battery life of the whole machine by 45% by cutting off static idle consumption.
+* **CPU-level tickless sleep**: FreeRTOS tickless idle is enabled in the idle task; when idle, the Cortex-M3 core enters sleep via the WFI instruction (peripheral clocks and SysTick keep running, STOP mode is not entered) and is woken by button / USART-idle interrupts at any time, further reducing idle-core power.
+The system first improves the dynamic battery life by about 45% through peripheral-level gating; after adding CPU-level tickless sleep on top of that, the overall dynamic battery life / energy efficiency improves by about 57%~60%.
 
 ---
 

@@ -30,3 +30,4 @@
 .\objects\hal_hard_i2c.o: .\Library\inc\stm32f10x_wwdg.h
 .\objects\hal_hard_i2c.o: .\Library\inc\misc.h
 .\objects\hal_hard_i2c.o: HAL_Hardware_Driver_Layer\hal_delay.h
+.\objects\hal_hard_i2c.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h

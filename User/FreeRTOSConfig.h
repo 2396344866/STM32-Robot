@@ -195,17 +195,25 @@
  * 1.使用FlyMcu擦除一下芯片,然后进行下载STMISP ->清除芯片(z)
  * 
  */
-#define configUSE_TICKLESS_IDLE   0
+#define configUSE_TICKLESS_IDLE   1
+
+/* 接入已有外设门控：空闲睡眠前关 ADC/TIM 与引脚高阻，唤醒后恢复并校准 ADC。
+ * 仅启用 FreeRTOS 自带的 WFI 睡眠（CPU 核停、外设时钟与 SysTick 仍运行），
+ * 不进入 STOP 模式，以保证 MQTT 心跳与实时响应。 */
+extern void BSP_Sensors_Sleep(void);
+extern void BSP_Sensors_Wakeup(void);
+#define configPRE_SLEEP_PROCESSING( x )    do { (void)(x); BSP_Sensors_Sleep(); } while( 0 )
+#define configPOST_SLEEP_PROCESSING( x )   do { (void)(x); BSP_Sensors_Wakeup(); } while( 0 )
 
 
 
 
 
 /*配置必要的声明*/
-/*配置必要的声明*/
+
+
 #define xPortPendSVHandler              PendSV_Handler 
 #define vPortSVCHandler                 SVC_Handler
-// [新增] 将 FreeRTOS 的心跳处理函数映射到 STM32 的硬件中断名
 #define xPortSysTickHandler             SysTick_Handler 
 #define INCLUDE_xTaskGetSchedulerState  1
 
