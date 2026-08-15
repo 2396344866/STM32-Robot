@@ -1,0 +1,7 @@
+# 专有库（InvenSense Motion Driver 6.12，受专有许可约束，禁止公开再分发）
+# 本地保留该目录用于编译/参考，但不纳入版本控制、不推送到远程。
+Motion_driver/
+
+# Keil 编译产物（自动生成，不纳入版本控制）
+Objects/
+Listings/
