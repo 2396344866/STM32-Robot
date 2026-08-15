@@ -19,21 +19,31 @@ void HAL_HardI2C_ResetBus(HardI2C_Handle_t *hI2c) {
     // 禁用I2C
     I2C_Cmd(hI2c->I2Cx, DISABLE);
     
-    // 配置引脚为普通推挽输出
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    // 配置引脚为普通开漏输出模式
+		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Pin = hI2c->SCL_Pin | hI2c->SDA_Pin;
     GPIO_Init(hI2c->GPIO_Port, &GPIO_InitStructure);
     
-    // 强制发送9个时钟脉冲释放SDA
+    // 释放SDA总线（输出高电平即高阻态）  
+	  //主机将SDA引脚置高（调用 GPIO_SetBits）只是改变了单片机自身引脚的输出寄存器，
+		//但无法改变从机内部的硬件状态。从机仍然认为自己在传输数据，其内部的输出级MOS管依然在持续导通并拉低SDA
     GPIO_SetBits(hI2c->GPIO_Port, hI2c->SDA_Pin);
+		//只要连续输入9个时钟脉冲，从机的bit计数器必然会溢出并清零
     for (int i = 0; i < 9; i++) {
         GPIO_ResetBits(hI2c->GPIO_Port, hI2c->SCL_Pin);
         HAL_Delay_us(5);
         GPIO_SetBits(hI2c->GPIO_Port, hI2c->SCL_Pin);
         HAL_Delay_us(5);
     }
-    
+		// 5. 生成STOP条件（SCL高电平期间，SDA产生上升沿）
+    GPIO_ResetBits(hI2c->GPIO_Port, hI2c->SDA_Pin);
+    HAL_Delay_us(5);
+		// SCL均为高空闲状态
+    GPIO_SetBits(hI2c->GPIO_Port, hI2c->SCL_Pin);
+    HAL_Delay_us(5);
+    GPIO_SetBits(hI2c->GPIO_Port, hI2c->SDA_Pin);
+    HAL_Delay_us(5);
     // 重新初始化I2C
     HAL_HardI2C_Init(hI2c);
 }

@@ -307,7 +307,6 @@ void Network_FSM_Setup(fsm_t* fsm) {
 void Network_FSM_Task(void *pvParameters) {
     fsm_t fsm;
     Network_FSM_Setup(&fsm);
-    uint16_t net_rx_len;
 		#if ENABLE_DEBUG_PRINT
 				uint16_t debug_rx_len;
 		#endif
@@ -324,8 +323,10 @@ void Network_FSM_Task(void *pvParameters) {
 					}
 			#endif
         // 2. �����ȴ� ESP8266 ��������
-        if (xQueueReceive(xNetRxQueue, &net_rx_len, pdMS_TO_TICKS(50)) == pdPASS) {
-            char* rx_str = (char*)g_esp8266_rx_buf;
+        if (xSemaphoreTake(xNetRxSem, pdMS_TO_TICKS(50)) == pdPASS) {
+            static char net_line_buf[ESP8266_RX_MAX + 1];
+            uint16_t n = BSP_ESP8266_RxDrain(net_line_buf, sizeof(net_line_buf));
+            char* rx_str = net_line_buf;
             
             // ��ӡ��ǰ׺�����ݡ���ʱ���������������У����� RTOS �淶��
             printf("[WIFI -> STM32]: %s", rx_str); 

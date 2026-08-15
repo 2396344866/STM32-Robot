@@ -27,7 +27,7 @@ void HAL_UART_DMA_Rx_Init(UART_Handle_t* hUart, uint8_t* rx_buffer, uint16_t buf
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
     DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
-    DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
+    DMA_InitStructure.DMA_Mode = DMA_Mode_Circular; // 环形模式：DMA 持续写入环形缓冲、永不停止，背靠背帧不丢；由 BSP_ESP8266_RxDrain 从环中 drained
     DMA_InitStructure.DMA_Priority = DMA_Priority_High;
     DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
     DMA_Init(dma_channel, &DMA_InitStructure);
