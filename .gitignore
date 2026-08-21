@@ -1,7 +1,31 @@
 # 专有库（InvenSense Motion Driver 6.12，受专有许可约束，禁止公开再分发）
-# 本地保留该目录用于编译/参考，但不纳入版本控制、不推送到远程。
 Motion_driver/
 
 # Keil 编译产物（自动生成，不纳入版本控制）
 Objects/
 Listings/
+
+#数据md
+数据方案.md
+
+# 私密：面试防守 / 简历量化口径（绝不进公开库）
+docs/test.md
+
+# ===== 机器 / 调试 / 备份类（避免泄露本机信息 & 冗余）=====
+# Keil 用户 GUI/选项（含机器名/用户名，如 .uvguix.LENOVO / .uvguix.123）
+*.uvguix.*
+*.uvoptx
+# Keil 调试配置 & 事件记录
+DebugConfig/
+*.scvd
+# RTE 由 Keil 自动生成
+RTE/
+# 备份目录（含日期戳）
+Motion_driver_backup_*/
+*_backup_*/
+# 编辑器 / 操作系统
+.vscode/
+.idea/
+.DS_Store
+*.bak
+*.bak_*
