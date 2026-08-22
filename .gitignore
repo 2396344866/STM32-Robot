@@ -5,21 +5,18 @@ Motion_driver/
 Objects/
 Listings/
 
-#数据md
-数据方案.md
-
-# 私密：面试防守 / 简历量化口径（绝不进公开库）
-docs/test.md
-
 # ===== 机器 / 调试 / 备份类（避免泄露本机信息 & 冗余）=====
 # Keil 用户 GUI/选项（含机器名/用户名，如 .uvguix.LENOVO / .uvguix.123）
 *.uvguix.*
 *.uvoptx
+
 # Keil 调试配置 & 事件记录
 DebugConfig/
+
 *.scvd
 # RTE 由 Keil 自动生成
 RTE/
+
 # 备份目录（含日期戳）
 Motion_driver_backup_*/
 *_backup_*/
