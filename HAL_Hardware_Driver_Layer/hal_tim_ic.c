@@ -32,7 +32,7 @@ void HAL_TIM1_CH4_IC_Init(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin) {
     TIM_ICInit(TIM1, &TIM_ICInitStructure);
 
     NVIC_InitStructure.NVIC_IRQChannel = TIM1_CC_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 5;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 12;  // 统一到 FreeRTOS syscall 安全区(>=configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY=10)
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
