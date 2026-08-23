@@ -1,5 +1,6 @@
 #include "hal_hard_i2c.h"
 #include "hal_delay.h" // 使用HAL_GetTick进行超时计算
+#include "hal_hw_cfg.h" // 魔法数字宏 + assert_param
 #include <stdio.h>   // 或 <stdlib.h>，它们内部都包含了 stddef.h
 #define I2C_TIMEOUT_CNT 100000
 
@@ -30,20 +31,20 @@ void HAL_HardI2C_ResetBus(HardI2C_Handle_t *hI2c) {
 		//但无法改变从机内部的硬件状态。从机仍然认为自己在传输数据，其内部的输出级MOS管依然在持续导通并拉低SDA
     GPIO_SetBits(hI2c->GPIO_Port, hI2c->SDA_Pin);
 		//只要连续输入9个时钟脉冲，从机的bit计数器必然会溢出并清零
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < (int)HAL_HW_CFG_I2C_RESET_CLK_PULSES; i++) {
         GPIO_ResetBits(hI2c->GPIO_Port, hI2c->SCL_Pin);
-        HAL_Delay_us(5);
+        HAL_Delay_us(HAL_HW_CFG_I2C_RESET_PULSE_US);
         GPIO_SetBits(hI2c->GPIO_Port, hI2c->SCL_Pin);
-        HAL_Delay_us(5);
+        HAL_Delay_us(HAL_HW_CFG_I2C_RESET_PULSE_US);
     }
 		// 5. 生成STOP条件（SCL高电平期间，SDA产生上升沿）
     GPIO_ResetBits(hI2c->GPIO_Port, hI2c->SDA_Pin);
-    HAL_Delay_us(5);
+    HAL_Delay_us(HAL_HW_CFG_I2C_RESET_PULSE_US);
 		// SCL均为高空闲状态
     GPIO_SetBits(hI2c->GPIO_Port, hI2c->SCL_Pin);
-    HAL_Delay_us(5);
+    HAL_Delay_us(HAL_HW_CFG_I2C_RESET_PULSE_US);
     GPIO_SetBits(hI2c->GPIO_Port, hI2c->SDA_Pin);
-    HAL_Delay_us(5);
+    HAL_Delay_us(HAL_HW_CFG_I2C_RESET_PULSE_US);
     // 重新初始化I2C
     HAL_HardI2C_Init(hI2c);
 }
@@ -77,7 +78,9 @@ void HAL_HardI2C_Init(HardI2C_Handle_t *hI2c) {
 }
 
 int HAL_HardI2C_WriteMem(HardI2C_Handle_t *hI2c, uint8_t DevAddr, uint8_t RegAddr, uint8_t *pData, uint16_t Size) {
-		/* 参数合法性检查 */
+		/* 参数合法性检查（assert_param 仅调试构建生效，生产构建零开销） */
+		assert_param(hI2c != NULL);
+		assert_param(Size == 0 || pData != NULL);
 		if (hI2c == NULL || (Size > 0 && pData == NULL)) {
         return -1;
     }
@@ -121,6 +124,9 @@ error:
 }
 
 int HAL_HardI2C_ReadMem(HardI2C_Handle_t *hI2c, uint8_t DevAddr, uint8_t RegAddr, uint8_t *pData, uint16_t Size) {
+    assert_param(hI2c != NULL);
+    assert_param(pData != NULL);
+    assert_param(Size > 0);
     if (hI2c == NULL || pData == NULL || Size == 0) {
         return -1;
     }
