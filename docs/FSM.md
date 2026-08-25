@@ -474,7 +474,7 @@ stateDiagram-v2
 | `Main_System_FSM_task` | RTOS 任务 | 50ms 周期（vTaskDelayUntil） |
 | `Motor_FSM_task` | RTOS 任务 | 20ms 周期 |
 | `IdleTimeoutTimer` | 单次定时器 | Main_System 中 10 秒超时进入待机 |
-| `Network_FSM_Task` | RTOS 任务 | 事件驱动 + 50ms 轮询超时（ `xQueueReceive` 非阻塞） |
+| `Network_FSM_Task` | RTOS 任务 | 事件驱动：等待 `xNetRxSem` 信号量唤醒（50ms 超时兜底），被唤醒后从环形缓冲 `RxDrain` |
 | `Sensor_FSM_Task` | RTOS 任务 | 动态周期（ACTIVE 态 100ms，SLEEP 态 500ms） |
 
 **多频调度说明：**

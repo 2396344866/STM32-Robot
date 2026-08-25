@@ -23,7 +23,7 @@ void HAL_EXTI_Init_PB12(void) {
     EXTI_Init(&EXTI_InitStruct);
     
     NVIC_InitStruct.NVIC_IRQChannel = EXTI15_10_IRQn;
-    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 5; // 根据FreeRTOS需求调整
+    NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 12; // 根据FreeRTOS需求调整：落在管控区间(>=10)，保证ISR内可安全调用FromISR API
     NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStruct);

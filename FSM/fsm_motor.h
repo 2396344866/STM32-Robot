@@ -37,6 +37,15 @@ typedef struct {
 } motor_ctx_t;
 
 extern MPU6050_Data_t g_imu_data;
+
+/* --- P0 故障安全：设备级安全响应标志（跨任务共享，由网络/电源任务写，motor 任务读） --- */
+/* 网络失联标志：fsm_network 在线态心跳超时后置 1，恢复在线清 0。motor 任务读此标志做"失联即停"。 */
+extern volatile uint8_t g_net_link_lost;
+/* 故障安全激活标志：motor 任务检测到跌倒/IMU失效/失联后进入安全态时置 1，恢复正常清 0。 */
+extern volatile uint8_t g_fault_safe_active;
+
 void Motor_FSM_Setup(fsm_t* fsm);
 void Motor_FSM_task(void *pvParameters);
+/* P0-① 设备级安全态入口：收腿趴下 + 停走，防翻倒/盲走。供 motor 任务与电源欠压共用。 */
+void enter_safe_state(void);
 #endif

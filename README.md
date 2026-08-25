@@ -99,7 +99,7 @@ Indoor service robots require long static battery life. Traditional unconditiona
 * **Complete physical-layer blocking**: The microcontroller directly turns off the peripheral clocks of the ADC bus and timers at the physical level after the bottom driver captures the command, and sets the sensor pins to high-impedance to cut static leakage. The system fundamentally stops invalid data sampling and calculation.
 * **Multi-source asynchronous wake-up mechanism**: Local button interrupts and network data idle interrupts maintain asynchronous listening during hardware sleep. Effective interaction can wake up the device at any time.
 * **CPU-level tickless sleep**: FreeRTOS tickless idle is enabled in the idle task; when idle, the Cortex-M3 core enters sleep via the WFI instruction (peripheral clocks and SysTick keep running, STOP mode is not entered) and is woken by button / USART-idle interrupts at any time, further reducing idle-core power.
-The system first improves the dynamic battery life by about 45% through peripheral-level gating; after adding CPU-level tickless sleep on top of that, the overall dynamic battery life / energy efficiency improves by about 57%~60%.
+The system first improves the dynamic battery life by about 45% (relative) through peripheral-level gating — measured as a 10 percentage-point gain in duty-cycle (from a 45% baseline to 55% after gating); after adding CPU-level tickless sleep on top of that, the overall dynamic battery life / energy efficiency improves further.
 
 ---
 

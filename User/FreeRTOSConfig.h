@@ -70,7 +70,7 @@
 #define configUSE_TICK_HOOK			0
 
 //使用内存申请失败钩子函数
-#define configUSE_MALLOC_FAILED_HOOK			0 
+#define configUSE_MALLOC_FAILED_HOOK			1
 
 
 #define configCPU_CLOCK_HZ			( ( unsigned long ) 72000000 )
@@ -92,7 +92,7 @@
 #define configUSE_TASK_NOTIFICATIONS 1 //开启任务通知功能，默认开启
 
 
-#define configUSE_MUTEXES           0  //互斥信号量开关
+#define configUSE_MUTEXES           1  //互斥信号量开关
 
 
                       
@@ -113,14 +113,18 @@
 //支持动态内存申请
 #define configSUPPORT_DYNAMIC_ALLOCATION     1    
 //支持静态内存
-#define configSUPPORT_STATIC_ALLOCATION		 0					
+#define configSUPPORT_STATIC_ALLOCATION		 1
 
 
 /*
  * 大于0时启用堆栈溢出检测功能，如果使用此功能 
  * 用户必须提供一个栈溢出钩子函数，如果使用的话
- * 此值可以为1或者2，因为有两种栈溢出检测方法 */
-#define configCHECK_FOR_STACK_OVERFLOW		 0   
+ * 此值可以为1或者2，因为有两种栈溢出检测方法。
+ * 设为2：方法1(写栈尾哨兵)+方法2(运行时比较栈指针)双保险，
+ * 用于捕获“任务因栈空间不足而随机崩溃”这类极难复现的问题。 */
+#define configCHECK_FOR_STACK_OVERFLOW		 2
+/* 栈溢出钩子：一旦检测到溢出立即打印并陷入安全停机，避免错误静默扩散 */
+#define configSTACK_OVERFLOW_HOOK_FAIL_FATAL	1
 
 
 /********************************************************************
@@ -229,9 +233,9 @@ extern void BSP_Sensors_Wakeup(void);
 #define INCLUDE_vTaskDelayUntil			     1
 #define INCLUDE_vTaskDelay				     1
 #define INCLUDE_eTaskGetState			     1
-#define INCLUDE_xTimerPendFunctionCall	     0
-//#define INCLUDE_xTaskGetCurrentTaskHandle       1
-//#define INCLUDE_uxTaskGetStackHighWaterMark     0
+#define INCLUDE_xTimerPendFunctionCall	     1
+#define INCLUDE_xTaskGetCurrentTaskHandle       1   // 供看门狗任务获取自身句柄(可选)
+#define INCLUDE_uxTaskGetStackHighWaterMark     1   // 看门狗监控栈水位，定位栈不足崩溃
 //#define INCLUDE_xTaskGetIdleTaskHandle          0
 
 
@@ -245,16 +249,33 @@ extern void BSP_Sensors_Wakeup(void);
 	#define configPRIO_BITS       		4                  
 #endif
 //中断最低优先级
+// 中断最低优先级（数值最大，逻辑优先级最低）
 #define configLIBRARY_LOWEST_INTERRUPT_PRIORITY			15     
 
-//系统可管理的最高中断优先级，
-#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY	10 //5指 中断优先级  0~5不被管控，中断5~15被freertos管控
+/*
+ * FreeRTOS 系统可管理的最高中断优先级阈值（数值边界）。
+ *
+ * 【重要】数值越小，中断优先级越高（逻辑优先级越高）。
+ * - 中断优先级数值 < 10 (即 0~9)：属于“不受管控”的高优先级中断。
+ *   这些中断在 FreeRTOS 进入临界区(BASEPRI 屏蔽)时仍会抢占内核，
+ *   【严禁】在其中调用任何 xQueueSendFromISR / xSemaphoreGiveFromISR 等
+ *   FreeRTOS API，否则会破坏内核内部数据结构、触发 HardFault。
+ *
+ * - 中断优先级数值 >= 10 (即 10~15)：属于“受管控”的低优先级中断。
+ *   这些中断在 FreeRTOS 临界区内会被 BASEPRI 屏蔽，允许安全地调用
+ *   任何 FromISR 类 API（前提是移位配置与内核一致）。
+ *
+ * 因此：凡是需要在 ISR 内调用 FreeRTOS API 的中断（UART IDLE、EXTI 等），
+ * 其抢占优先级数值必须 >= configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY(10)。
+ * 本工程统一设为 12。
+ */
+#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY	10
 
+// 内核优先级（SysTick/PendSV）设为最低优先级 15（数值左移后为 0xF0）
 #define configKERNEL_INTERRUPT_PRIORITY 		( configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )	/* 240 */
 
+// 实际写入 NVIC 寄存器的系统调用阈值（数值左移后为 0xA0）
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY 	( configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
-
-
 
 
 /* This is the value being used as per the ST library which permits 16
@@ -262,6 +283,21 @@ priority values, 0 to 15.  This must correspond to the
 configKERNEL_INTERRUPT_PRIORITY setting.  Here 15 corresponds to the lowest
 NVIC value of 255. */
 #define configLIBRARY_KERNEL_INTERRUPT_PRIORITY	15
+
+/******************************************************************
+           断言与调试支持
+******************************************************************/
+/* configASSERT：调试构建下启用，由标准外设库的 assert_failed(file,line) 承接，
+ * 断言失败立即打印位置并陷入 while(1) 陷阱（或断点），暴露非法入参/内核不变量违例。
+ * 注意：assert_failed 的实现体在 main.c 提供；若只在此宏名裸定义而无函数体，
+ * FreeRTOS 内部所有 configASSERT 会展开成裸表达式导致 #109 编译错误。
+ * 声明原型放于此，使所有 include 本文件的 FreeRTOS 源文件可见，避免 #223 隐式声明告警。 */
+void assert_failed( uint8_t * file, uint32_t line );
+#define configASSERT( x )	if( ( x ) == 0 ) assert_failed( ( uint8_t * ) __FILE__, __LINE__ )
+
+/* 静态分配：运行期零动态分配，满足安全关键场景，需配套
+ * vApplicationGetIdleTaskMemory / vApplicationGetTimerTaskMemory 回调（见 main.c） */
+#define configSUPPORT_STATIC_ALLOCATION		1
 
 #endif /* FREERTOS_CONFIG_H */
 

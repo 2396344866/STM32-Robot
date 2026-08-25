@@ -1,5 +1,6 @@
 #include "fsm_motor.h"
 #include "fsm_core.h"
+#include <math.h>
 #include "FreeRTOS.h"
 #include "event_bus.h"
 #include "sys_events.h"
@@ -312,6 +313,70 @@ static float last_err_pitch = 0.0f;
 static float last_err_roll = 0.0f;
 
 /* ============================================================
+ * P0-① 设备级故障安全：安全态 + 跨任务失联/失效标志
+ * 设计原则：不改动原有步态 PD 算法，仅在控制环入口加"安全门禁"。
+ * 触发条件：跌倒（倾角超阈）/ IMU 失效 / 网络失联 → 进入安全态收腿趴下、停走。
+ * ============================================================ */
+volatile uint8_t g_fault_safe_active = 0;
+volatile uint8_t g_net_link_lost = 0;
+
+/* IMU 连续读取失败计数：GetData 连续失败超阈值才判失效，滤掉单帧 FIFO 抖动 */
+#define IMU_FAIL_THRESHOLD   5
+static uint8_t g_imu_fail_cnt = 0;
+
+/* 跌倒检测倾角阈值（度）：单腿着地姿态下，机身倾转超此值即判定翻倒风险 */
+#define TIP_OVER_PITCH_DEG  50.0f
+#define TIP_OVER_ROLL_DEG   50.0f
+
+/* 进入安全态：所有膝关节收到极限（趴下贴地），髋关节回中，停止任何步态前进。
+ * 不依赖 IMU（失效时也能执行），纯开环硬件动作，确保最坏情况下机身不翻倒。 */
+void enter_safe_state(void) {
+    if (g_fault_safe_active) return;   // 防重复进入
+    g_fault_safe_active = 1;
+    // 收腿趴下：膝关节全部收到最大角度（身体下沉贴地），髋关节回中（90°）
+    BSP_Servo_Set_Left_Top_Knee(KNEE_MAX);
+    BSP_Servo_Set_Right_Top_Knee(KNEE_MAX);
+    BSP_Servo_Set_Left_Bottom_Knee(KNEE_MAX);
+    BSP_Servo_Set_Right_Bottom_Knee(KNEE_MAX);
+    BSP_Servo_Set_Left_Top_Hip(90.0f);
+    BSP_Servo_Set_Right_Top_Hip(90.0f);
+    BSP_Servo_Set_Left_Bottom_Hip(90.0f);
+    BSP_Servo_Set_Right_Bottom_Hip(90.0f);
+}
+
+/* 退出安全态：故障解除后由控制环调用，恢复 PD 闭环（下一帧 load_sequence 会覆盖角度） */
+static void exit_safe_state(void) {
+    g_fault_safe_active = 0;
+    g_imu_fail_cnt = 0;
+}
+
+/* 安全门禁：每周期调用，返回 1 表示应进入/保持安全态。
+ * 判定三项独立故障源：① 跌倒 ② IMU 失效 ③ 网络失联 */
+static uint8_t fault_safe_gate(void) {
+    uint8_t fault = 0;
+
+    /* ① 跌倒检测：基于最新 g_imu_data 倾角（IsWorking 时才可信） */
+    if (BSP_MPU6050_IsWorking()) {
+        if (fabsf(g_imu_data.pitch) > TIP_OVER_PITCH_DEG ||
+            fabsf(g_imu_data.roll)  > TIP_OVER_ROLL_DEG) {
+            fault |= 0x01;
+        }
+    }
+
+    /* ② IMU 失效：底层不工作，或连续读取失败超阈值（防单帧抖动误判） */
+    if (!BSP_MPU6050_IsWorking()) {
+        fault |= 0x02;
+    }
+
+    /* ③ 网络失联：心跳超时标志（由 fsm_network 维护） */
+    if (g_net_link_lost) {
+        fault |= 0x04;
+    }
+
+    return fault;
+}
+
+/* ============================================================
  * 底层数学工具：角度包裹 (Angle Wrap)
  * 解决倒置安装导致的 180度 -> -180度 奇异点跃变
  * ============================================================ */
@@ -511,25 +576,51 @@ void Motor_FSM_task(void *pvParameters){
     const TickType_t xFrequency = pdMS_TO_TICKS(20); // 20ms 周期，保证舵机控制平滑
     TickType_t xLastWakeTime = xTaskGetTickCount();
 		while(1) {
-					// --- 读取 MPU6050 姿态数据 ---
-					// 检查底层 EXTI 中断是否将数据准备就绪标志置位
-					if (BSP_MPU6050_IsWorking()) {
-						if (BSP_MPU6050_IsDataReady()) {
-							BSP_MPU6050_ClearDataReady(); // 立即清除标志位
-							// 从 FIFO 读取解算后的数据
-							if (BSP_MPU6050_GetData(&g_imu_data) == 0) {
-									// 如果需要调试，可以取消下面这行的注释打印数据
-									//printf("%.1f,%.1f,%.1f\r\n", g_imu_data.yaw, g_imu_data.pitch, g_imu_data.roll);
-									
-								
-								
-									// SYS_LOG("MOTO", "IMU: %.1f,%.1f,%.1f\n", g_imu_data.yaw, g_imu_data.pitch, g_imu_data.roll);
-									// 【预留接口】可以将 g_imu_data 的数据通过 fsm_push_event 压入状态机，
-									// 或者直接给 PID 控制器使用。
-								}
+				// --- 读取 MPU6050 姿态数据 ---
+				// 检查底层 EXTI 中断是否将数据准备就绪标志置位
+				if (BSP_MPU6050_IsWorking()) {
+					if (BSP_MPU6050_IsDataReady()) {
+						BSP_MPU6050_ClearDataReady(); // 立即清除标志位
+						// 从 FIFO 读取解算后的数据
+						if (BSP_MPU6050_GetData(&g_imu_data) == 0) {
+								g_imu_fail_cnt = 0;  // 读取成功，清除失效计数
+								// 如果需要调试，可以取消下面这行的注释打印数据
+								//printf("%.1f,%.1f,%.1f\r\n", g_imu_data.yaw, g_imu_data.pitch, g_imu_data.roll);
+							
+							
+								// SYS_LOG("MOTO", "IMU: %.1f,%.1f,%.1f\n", g_imu_data.yaw, g_imu_data.pitch, g_imu_data.roll);
+								// 【预留接口】可以将 g_imu_data 的数据通过 fsm_push_event 压入状态机，
+								// 或者直接给 PID 控制器使用。
+							} else {
+							// 单帧读取失败：累计计数，超阈值才判 IMU 失效（防 FIFO 偶发抖动误触发安全态）
+							if (g_imu_fail_cnt < 0xFF) g_imu_fail_cnt++;
 						}
 					}
-			fsm_run(&g_Motor_fsm);
-			vTaskDelayUntil(&xLastWakeTime, xFrequency);
+				} else {
+					// 底层不工作：失效计数直接拉满，门禁会判 IMU 失效
+					g_imu_fail_cnt = IMU_FAIL_THRESHOLD;
+				}
+
+				// --- P0-① 故障安全门禁：跌倒 / IMU 失效 / 网络失联 → 进入安全态 ---
+				uint8_t fault = fault_safe_gate();
+				// IMU 连续失败也计入失效（fault_safe_gate 仅判 !IsWorking，这里补连续失败）
+				if (g_imu_fail_cnt >= IMU_FAIL_THRESHOLD) fault |= 0x02;
+
+				if (fault) {
+					if (!g_fault_safe_active) {
+						enter_safe_state();   // 收腿趴下（纯开环，不依赖 IMU）
+					}
+					// 故障期停走：跳过步态 FSM 推进，仅维持安全态
+				} else {
+					if (g_fault_safe_active) {
+						exit_safe_state();    // 故障解除
+						enter_stop(&g_Motor_fsm, NULL);  // 复位到站立足态，恢复 PD 闭环
+					}
+				}
+
+				if (!g_fault_safe_active) {
+					fsm_run(&g_Motor_fsm);     // 正常：运行步态状态机
+				}
+		vTaskDelayUntil(&xLastWakeTime, xFrequency);
     }
 }

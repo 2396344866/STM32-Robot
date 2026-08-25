@@ -17,7 +17,7 @@
 | 文件 | 对应硬件 | 说明 |
 |------|----------|------|
 | `bsp_debug_uart.c/h` | USART2, PA2(TX), PA3(RX) | 调试串口，提供 FreeRTOS 队列 `xDebugRxQueue`，可在中断中唤醒解析任务；通过 `ENABLE_DEBUG_PRINT` 宏裁剪 |
-| `bsp_esp8266.c/h` | USART1, PA9(TX), PA10(RX) | WiFi 模块，同样使用 DMA+IDLE 接收，数据通过 `xNetRxQueue` 传递 |
+| `bsp_esp8266.c/h` | USART1, PA9(TX), PA10(RX) | WiFi 模块，环形 DMA+IDLE 接收；ISR 用二进制信号量 `xNetRxSem` 唤醒网络任务，数据由消费者从环形缓冲自取 |
 | `bsp_led.c/h` | PC13 | 用户 LED1，低电平点亮，初始化后可直接 On/Off/Toggle |
 | `bsp_mpu6050.c/h` | I2C2 (PB10, PB11), INT: PB12 | IMU 传感器，若成功初始化则 `g_mpu_is_working=1`，提供数据就绪标志、欧拉角读取及日志接口 `BSP_MPL_LOGI`/`BSP_MPL_LOGE` |
 | `bsp_oled.c/h` | 软件 I2C: PB8(SCL), PB9(SDA) | 0.96寸 OLED，地址 0x78，扩展了多种显示接口 |
@@ -106,5 +106,5 @@ void BSP_Sensors_Wakeup(void);                  // 重新使能 ADC1（含校准
 - 舵机映射与物理连线强相关，修改硬件后须同步更新 `TIMx_CHy_Write` 与句柄绑定。
 - DHT11 的 PA15 引脚默认是 JTDI 功能，若之前未关闭 JTAG 调试功能会导致引脚初始化失败，程序中通过 `GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE)` 强制释放该引脚。
 - 部分 BSP 模块（如 LED、MPU6050、Servo）内部持有 DD 层句柄的静态实例，应用层不需关心句柄，直接调用函数即可。
-- 调试串口的 `QueueHandle_t xDebugRxQueue` 和网络串口的 `QueueHandle_t xNetRxQueue` 以及对应的缓冲区均为全局可访问，方便各任务使用。
+- 调试串口的 `QueueHandle_t xDebugRxQueue` 和网络串口的 `SemaphoreHandle_t xNetRxSem`（唤醒用，数据经环形 DMA 缓冲承载）以及对应的缓冲区均为全局可访问，方便各任务使用。
 - 传感器休眠/唤醒接口仅供应用层状态机调用，休眠时 ADC1 与 TIM1 停止工作，MCP3002/MQ2 的分压电路若未使用外部 MOSFET 控制，模拟前端仍会有微安级静态电流。

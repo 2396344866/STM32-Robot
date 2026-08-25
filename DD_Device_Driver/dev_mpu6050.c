@@ -65,28 +65,27 @@ int Dev_MPU6050_Init(MPU6050_Handle_t *handle) {
     handle->io.InitIO();
     
     if(mpu_init(NULL) != 0) return -1;
-    mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL);
-    mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL);
-    
-    mpu_set_sample_rate(200); 
-    mpu_set_lpf(42);
-    mpu_set_gyro_fsr(2000); 
-    mpu_set_accel_fsr(2);
-    
+    if(mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL) != 0) return -1;
+    if(mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL) != 0) return -1;
+
+    if(mpu_set_sample_rate(200) != 0) return -1;
+    if(mpu_set_lpf(42) != 0) return -1;
+    if(mpu_set_gyro_fsr(2000) != 0) return -1;
+    if(mpu_set_accel_fsr(2) != 0) return -1;
+
     if (dmp_load_motion_driver_firmware() != 0) return -1;
-    
-		
+
     static signed char gyro_orientation[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
-    dmp_set_orientation(inv_orientation_matrix_to_scalar(gyro_orientation));
-    
-    dmp_enable_feature(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_SEND_RAW_ACCEL | DMP_FEATURE_SEND_CAL_GYRO | DMP_FEATURE_GYRO_CAL);
-		dmp_set_fifo_rate(100);  
-    mpu_set_dmp_state(1);   
-    
+    if(dmp_set_orientation(inv_orientation_matrix_to_scalar(gyro_orientation)) != 0) return -1;
+
+    if(dmp_enable_feature(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_SEND_RAW_ACCEL | DMP_FEATURE_SEND_CAL_GYRO | DMP_FEATURE_GYRO_CAL) != 0) return -1;
+    if(dmp_set_fifo_rate(100) != 0) return -1;
+    if(mpu_set_dmp_state(1) != 0) return -1;
+
     // 先配置中断寄存器
     uint8_t data = 0x02;
-    Sensors_I2C_WriteRegister(0x68, 0x37, 1, &data); 
-    Sensors_I2C_WriteRegister(0x68, 0x38, 1, &data);
+    if(Sensors_I2C_WriteRegister(0x68, 0x37, 1, &data) != 0) return -1;
+    if(Sensors_I2C_WriteRegister(0x68, 0x38, 1, &data) != 0) return -1;
     
     // 强制阻塞 10 秒，让 DMP 在后台依靠真实物理重力完成四元数收敛
     // 警告：绝不能在此处调用 mpu_reset_fifo()

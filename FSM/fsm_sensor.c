@@ -4,7 +4,9 @@
 #include "sys_config.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "semphr.h"
 #include "bsp_sensor.h"
+#include "hal_hw_cfg.h"  // 魔法数字宏 + assert_param
 
 SensorData_t g_sensor_data = {0};
 static fsm_t g_sensor_fsm;
@@ -31,40 +33,55 @@ static void on_enter_active(fsm_t* fsm, void* arg) {
 // 轮询采集函数 (仅在 ACTIVE 状态下执行)
 static void on_poll_active(fsm_t* fsm, void* arg) {
     static uint8_t dht_div = 0;
-    
+    float dist = 0.0f, smoke = 0.0f, lux = 0.0f;
+    uint8_t t = 0, h = 0;
+
     // 1. 读取超声波
-    float dist = BSP_Sensor_GetDistance();
-    g_sensor_data.distance = dist;
-    
-    // 避障逻辑判断
-    if (dist > 2.0f && dist < 15.0f) {
+    dist = BSP_Sensor_GetDistance();
+
+    // 避障逻辑判断（本地副本，不持锁）
+    if (dist > HAL_HW_CFG_AVOID_NEAR_MIN_CM && dist < HAL_HW_CFG_AVOID_NEAR_MAX_CM) {
         if (!is_obstacle_blocked) {
             is_obstacle_blocked = 1;
             SYS_LOG("SENS", "Obstacle Detected! Dist: %.1f cm\n", dist);
-            event_bus_publish(EVT_WARN_OBSTACLE, 0); 
+            event_bus_publish(EVT_WARN_OBSTACLE, 0);
         }
-    } else if (dist >= 17.0f) { 
+    } else if (dist >= HAL_HW_CFG_AVOID_CLEAR_CM) {
         if (is_obstacle_blocked) {
             is_obstacle_blocked = 0;
-            SYS_LOG("SENS", "Obstacle Cleared! Dist: %.1f cm\n", dist); 
+            SYS_LOG("SENS", "Obstacle Cleared! Dist: %.1f cm\n", dist);
             event_bus_publish(EVT_OBSTACLE_CLEARED, 0);
         }
     }
-    
-    // 2. 读取模拟量
-    g_sensor_data.smoke_ppm = BSP_Sensor_GetSmoke();
-    g_sensor_data.light_lux = BSP_Sensor_GetLight();
-		
+
+    // 2. 读取模拟量（从 ADC 双缓冲非活跃半区同步最新帧）
+    BSP_Sensor_SyncAdcFrame();
+    smoke = BSP_Sensor_GetSmoke();
+    lux  = BSP_Sensor_GetLight();
+
     // 3. 读取 DHT11 (降频读取)
-    if (++dht_div >= 20) {
+    uint8_t dht_ok = 0;
+    if (++dht_div >= HAL_HW_CFG_DHT11_POLL_DIV) {
         dht_div = 0;
-        uint8_t t, h;
-        if (BSP_Sensor_ReadDHT11(&t, &h)) { 
-            g_sensor_data.temp = (float)t;
-            g_sensor_data.hum = (float)h;
-            SYS_LOG("SENS", "Env Update -> T:%.1fC, H:%.1f%%, Smoke:%.1fppm, Light:%.1f Lux\n", 
-                    g_sensor_data.temp, g_sensor_data.hum, g_sensor_data.smoke_ppm, g_sensor_data.light_lux);
+        if (BSP_Sensor_ReadDHT11(&t, &h)) {
+            dht_ok = 1;
         }
+    }
+
+    // 4. 统一在互斥量保护下提交一帧传感器数据（防 float 多字节读写撕裂）
+    if (xSensorDataMutex != NULL && xSemaphoreTake(xSensorDataMutex, pdMS_TO_TICKS(HAL_HW_CFG_SENSOR_MUTEX_TIMEOUT_MS)) == pdPASS) {
+        g_sensor_data.distance   = dist;
+        g_sensor_data.smoke_ppm  = smoke;
+        g_sensor_data.light_lux  = lux;
+        if (dht_ok) {
+            g_sensor_data.temp = (float)t;
+            g_sensor_data.hum  = (float)h;
+        }
+        xSemaphoreGive(xSensorDataMutex);
+    }
+    if (dht_ok) {
+        SYS_LOG("SENS", "Env Update -> T:%.1fC, H:%.1f%%, Smoke:%.1fppm, Light:%.1f Lux\n",
+                g_sensor_data.temp, g_sensor_data.hum, g_sensor_data.smoke_ppm, g_sensor_data.light_lux);
     }
 }
 
@@ -77,13 +94,13 @@ static void on_poll_active(fsm_t* fsm, void* arg) {
 //    float dist = BSP_Sensor_GetDistance();
 //    g_sensor_data.distance = dist;
 //    // 避障逻辑判断
-//    if (dist > 2.0f && dist < 15.0f) {
+//    if (dist > HAL_HW_CFG_AVOID_NEAR_MIN_CM && dist < HAL_HW_CFG_AVOID_NEAR_MAX_CM) {
 //        if (!is_obstacle_blocked) {
 //            is_obstacle_blocked = 1;
 //            SYS_LOG("SENS", "Obstacle Detected! Dist: %.1f cm\n", dist); // 状态突变打印
 //            event_bus_publish(EVT_WARN_OBSTACLE, 0); 
 //        }
-//    } else if (dist >= 17.0f) { 
+//    } else if (dist >= HAL_HW_CFG_AVOID_CLEAR_CM) { 
 //        if (is_obstacle_blocked) {
 //            is_obstacle_blocked = 0;
 //            SYS_LOG("SENS", "Obstacle Cleared! Dist: %.1f cm\n", dist);  // 状态突变打印
@@ -97,7 +114,7 @@ static void on_poll_active(fsm_t* fsm, void* arg) {
 //		
 //		
 //    // 3. 读取 DHT11 (降频读取)
-//    if (++dht_div >= 20) {
+//    if (++dht_div >= HAL_HW_CFG_DHT11_POLL_DIV) {
 //        dht_div = 0;
 //        uint8_t t, h;
 //        if (BSP_Sensor_ReadDHT11(&t, &h)) { 
