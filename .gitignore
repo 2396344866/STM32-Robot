@@ -5,6 +5,7 @@ Motion_driver/
 Objects/
 Listings/
 
+<<<<<<< HEAD
 # 数据 / 内部文档 md（含面试防守与简历量化口径，绝不进公开库）
 数据方案.md
 工业实践对比.md
@@ -36,15 +37,20 @@ docs/test.md
 # 属性文件（本地）
 .gitattributes
 
+=======
+>>>>>>> 0642d8de6bceacb0965c09879a721cf0c5d4038e
 # ===== 机器 / 调试 / 备份类（避免泄露本机信息 & 冗余）=====
 # Keil 用户 GUI/选项（含机器名/用户名，如 .uvguix.LENOVO / .uvguix.123）
 *.uvguix.*
 *.uvoptx
+
 # Keil 调试配置 & 事件记录
 DebugConfig/
+
 *.scvd
 # RTE 由 Keil 自动生成
 RTE/
+
 # 备份目录（含日期戳）
 Motion_driver_backup_*/
 *_backup_*/
