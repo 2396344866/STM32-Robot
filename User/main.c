@@ -21,6 +21,7 @@
 #include "fsm_network.h"			// 包含 Network_FSM_Setup
 #include "fsm_sensor.h"
 #include "event_bus.h"       // 用于总线初始化
+#include "state_repo.h"      // 中央状态仓库（层2 状态数据层）
 #include "sys_config.h"
 #include "hal_hw_cfg.h"  // 魔法数字宏 + assert_param
 #include "stm32f10x_iwdg.h"  // 硬件独立看门狗
@@ -193,6 +194,8 @@ void start_task(void *pvParameters){
     }
     // 初始化总线，清空订阅表
     event_bus_init();
+    // 初始化中央状态仓库（事件组 + 全局状态表），必须在各 FSM 写入前创建
+    state_repo_init();
 		// --- B. 中断硬件初始化(硬件上电死机大概率就是提前开启中断 中断触发导致)---
     // 必须在 xKeyLogicQueue 创建成功  后调用，否则中断中写队列会 HardFault
 		KEY_Init();
@@ -289,9 +292,27 @@ static const struct {
 void watchdog_task(void *pvParameters) {
     (void)pvParameters;
     uint32_t fail_streak = 0;
+    uint32_t last_drop = 0;        // 事件总线累计丢失计数（仅观测，不触发复位）
+    uint32_t last_sub_full = 0;    // 订阅表满计数
 
     for (;;) {
         vTaskDelay(pdMS_TO_TICKS(HAL_HW_CFG_WDG_PERIOD_MS));   // 1s 监护周期，不长期阻塞空闲任务(保证 tickless 休眠)
+
+        /* 事件总线可观测性：安全关键事件（如 EVT_WARN_OBSTACLE）若因订阅者
+         * 队列满被静默丢弃，此处能发现并打印，便于现场定位；队列满多为瞬时
+         * 拥塞，不直接复位，避免误杀。sub_full 反映订阅表容量不足（需扩容）。 */
+        event_bus_stats_t eb;
+        event_bus_get_stats(&eb);
+        if (eb.drop_total != last_drop) {
+            printf("[WDG][事件总线] 事件投递丢失 +%lu (累计 %lu)\n",
+                   (unsigned long)(eb.drop_total - last_drop), (unsigned long)eb.drop_total);
+            last_drop = eb.drop_total;
+        }
+        if (eb.sub_full_total != last_sub_full) {
+            printf("[WDG][事件总线] 订阅表已满，订阅失败 +%lu\n",
+                   (unsigned long)(eb.sub_full_total - last_sub_full));
+            last_sub_full = eb.sub_full_total;
+        }
 
         /* P0-② UVLO：片内 PVD 欠压检测。跌穿 → 进安全态收腿趴下，并停止喂 IWDG，
          * 由硬件看门狗 2s 硬复位，避免低压驱动抽搐触发不可控复位（M1 根因治理）。 */
