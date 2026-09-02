@@ -8,8 +8,14 @@
 #include "hal_pwm.h" 
 #include "bsp_servo.h"
 #include "bsp_mpu6050.h"
+#include "state_repo.h"   // 中央状态仓库（ST_IMU_DATA 等）
 static fsm_t g_Motor_fsm;
-MPU6050_Data_t g_imu_data;
+// IMU 数据不再用全局变量：Motor 单写者写入 ST_IMU_DATA，自身 PD 控制与 Network 上报均经 state_read_if_new 读取
+static MPU6050_Data_t g_imu_snap;   // Motor 本地 IMU 快照
+static uint32_t g_imu_seq = 0;      // ST_IMU_DATA 读取游标
+static inline void motor_imu_refresh(void) {
+    (void)state_read_if_new(ST_IMU_DATA, &g_imu_snap, &g_imu_seq);
+}
 // --- 配置宏 ---
 #define ACTION_INTERVAL_MS  200   // 动作每一步的间隔时间，加速以产生惯性
 
@@ -357,8 +363,9 @@ static uint8_t fault_safe_gate(void) {
 
     /* ① 跌倒检测：基于最新 g_imu_data 倾角（IsWorking 时才可信） */
     if (BSP_MPU6050_IsWorking()) {
-        if (fabsf(g_imu_data.pitch) > TIP_OVER_PITCH_DEG ||
-            fabsf(g_imu_data.roll)  > TIP_OVER_ROLL_DEG) {
+        motor_imu_refresh();
+        if (fabsf(g_imu_snap.pitch) > TIP_OVER_PITCH_DEG ||
+            fabsf(g_imu_snap.roll)  > TIP_OVER_ROLL_DEG) {
             fault |= 0x01;
         }
     }
@@ -391,8 +398,9 @@ static float wrap_180(float angle) {
  * ============================================================ */
 static void apply_pose_with_pid(const pose_frame_t* frame) {
     // 1. 提取当前原始欧拉角
-    float current_pitch = g_imu_data.pitch;
-    float current_roll = g_imu_data.roll;
+    motor_imu_refresh();
+    float current_pitch = g_imu_snap.pitch;
+    float current_roll = g_imu_snap.roll;
 
     // 2. 计算连续最短路径误差
     float err_pitch = wrap_180(TARGET_PITCH - current_pitch);
@@ -449,8 +457,9 @@ static void load_sequence(fsm_t* fsm, const gait_sequence_t* seq) {
     motor_ctx.last_tick = FSM_GET_TICK();
     
     // 初始化 PID 历史状态，防止动作切换瞬间的微分突变
-    last_err_pitch = wrap_180(TARGET_PITCH - g_imu_data.pitch);
-    last_err_roll  = wrap_180(TARGET_ROLL - g_imu_data.roll);
+    motor_imu_refresh();
+    last_err_pitch = wrap_180(TARGET_PITCH - g_imu_snap.pitch);
+    last_err_roll  = wrap_180(TARGET_ROLL - g_imu_snap.roll);
     
     // 立即基于闭环机制执行第一帧
     if (seq && seq->frames) {
@@ -582,10 +591,12 @@ void Motor_FSM_task(void *pvParameters){
 					if (BSP_MPU6050_IsDataReady()) {
 						BSP_MPU6050_ClearDataReady(); // 立即清除标志位
 						// 从 FIFO 读取解算后的数据
-						if (BSP_MPU6050_GetData(&g_imu_data) == 0) {
-								g_imu_fail_cnt = 0;  // 读取成功，清除失效计数
-								// 如果需要调试，可以取消下面这行的注释打印数据
-								//printf("%.1f,%.1f,%.1f\r\n", g_imu_data.yaw, g_imu_data.pitch, g_imu_data.roll);
+					MPU6050_Data_t imu_local;
+					if (BSP_MPU6050_GetData(&imu_local) == 0) {
+							g_imu_fail_cnt = 0;  // 读取成功，清除失效计数
+							state_write(ST_IMU_DATA, &imu_local, sizeof(imu_local));
+							// 如果需要调试，可以取消下面这行的注释打印数据
+							//printf("%.1f,%.1f,%.1f\r\n", imu_local.yaw, imu_local.pitch, imu_local.roll);
 							
 							
 								// SYS_LOG("MOTO", "IMU: %.1f,%.1f,%.1f\n", g_imu_data.yaw, g_imu_data.pitch, g_imu_data.roll);
