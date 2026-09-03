@@ -1,11 +1,20 @@
-# 专有库（InvenSense Motion Driver 6.12，受专有许可约束，禁止公开再分发）
+# ============================================================
+# STM32_robot_version_2 — .gitignore
+# 原则：内部文档 / 本地脚本 / 编译产物 / 本机调试配置 / 凭据 不进公开库
+# ============================================================
+
+# ---- 凭据（含真实 WiFi/MQTT/云平台账号密码，禁止上传）----
+# 例：esp01s_config_local.h（USERNAME/PASSWORD/CLIENTID/PRODUCTID/DEVICENAME）
+*_config_local.h
+
+# ---- 专有库（InvenSense Motion Driver 6.12，专有许可禁止再分发）----
 Motion_driver/
 
-# Keil 编译产物（自动生成，不纳入版本控制）
+# ---- Keil 编译产物（自动生成，不纳入版本控制）----
 Objects/
 Listings/
 
-# 数据 / 内部文档 md（含面试防守与简历量化口径，绝不进公开库）
+# ---- 内部文档 md（面试防守 / 简历量化口径 / 实测数据，绝不进公开库）----
 数据方案.md
 工业实践对比.md
 实测记录表.md
@@ -15,43 +24,39 @@ Listings/
 error.md
 工业实践与设备级标准核查.md
 
-# docs 下仅允许 HAL/BSP/FSM/DD readme + 移植指南，其余 md 禁止
+# ---- docs 下仅允许 HAL/BSP/FSM/DD readme + 移植指南，其余 md 禁止 ----
 docs/test.md
 
-# 脚本驱动清单（本地用，不进公开库）
+# ---- 同步脚本驱动清单 & 状态（本地用，不进公开库）----
 更新github.txt
-# github 同步脚本状态/日志（本地，不进库）
 .github_sync_state
 .github_sync_log
-
-# 其他本地 md（按需补充，统一不进库）
-*.md.local
 更新md.txt
+*.md.local
 
-# Python（本地验证脚本，不进库）
+# ---- Python / 本地脚本（本地验证用，不进库）----
 *.py
-# 本地同步/驱动脚本（不进库）
 *.sh
 
-# 属性文件（本地）
+# ---- 属性文件（本地）----
 .gitattributes
 
-# ===== 机器 / 调试 / 备份类（避免泄露本机信息 & 冗余）=====
+# ---- 机器 / 调试 / 备份类（避免泄露本机信息 & 冗余）----
 # Keil 用户 GUI/选项（含机器名/用户名，如 .uvguix.LENOVO / .uvguix.123）
 *.uvguix.*
+# uvoptx 为本地调试配置（含本机路径/断点），不进库
 *.uvoptx
-
 # Keil 调试配置 & 事件记录
 DebugConfig/
-
 *.scvd
 # RTE 由 Keil 自动生成
 RTE/
 
-# 备份目录（含日期戳）
+# ---- 备份目录（含日期戳）----
 Motion_driver_backup_*/
 *_backup_*/
-# 编辑器 / 操作系统
+
+# ---- 编辑器 / 操作系统 ----
 .vscode/
 .idea/
 .DS_Store
