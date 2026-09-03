@@ -36,7 +36,7 @@ typedef struct {
     uint32_t last_tick;                 // 上一次执行的时间
 } motor_ctx_t;
 
-extern MPU6050_Data_t g_imu_data;
+/* IMU 数据不再用全局变量：经 state_repo 的 ST_IMU_DATA 传递（Motor 单写者无锁 + seq，解 M1 竞态） */
 
 /* --- P0 故障安全：设备级安全响应标志（跨任务共享，由网络/电源任务写，motor 任务读） --- */
 /* 网络失联标志：fsm_network 在线态心跳超时后置 1，恢复在线清 0。motor 任务读此标志做"失联即停"。 */
