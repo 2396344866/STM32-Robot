@@ -12,6 +12,7 @@
 #include "bsp_mpu6050.h"
 #include "fsm_motor.h"
 #include "fsm_sensor.h"
+#include "state_repo.h"  // 中央状态仓库（层2 状态数据层）
 // 1. �������崦
 #if ENABLE_DEBUG_PRINT
 static uint8_t g_fsm_paused = 0;
@@ -28,7 +29,6 @@ static uint8_t g_fsm_paused = 0;
 
 static fsm_event_t net_evt_buffer[16];
 static Net_context_t net_ctx;
-//GlobalSensorData_t g_SensorData;
 #define APP_SOURCE 2
 #define ENCODE_PARAM(source, evt) (((uint32_t)(source) << 16) | (evt))
 
@@ -361,13 +361,13 @@ static void on_poll_online(fsm_t* fsm, void* arg) {
         ctx->last_tx_tick = FSM_GET_TICK();
         // 在互斥量保护下读取跨任务共享的传感器数据（防 float 读写撕裂）
         float t = 0, hu = 0, sm = 0, lu = 0, di = 0;
-        if (xSensorDataMutex != NULL && xSemaphoreTake(xSensorDataMutex, pdMS_TO_TICKS(10)) == pdPASS) {
-            t  = g_sensor_data.temp;
-            hu = g_sensor_data.hum;
-            sm = g_sensor_data.smoke_ppm;
-            lu = g_sensor_data.light_lux;
-            di = g_sensor_data.distance;
-            xSemaphoreGive(xSensorDataMutex);
+        SensorData_t sdata_net;
+        if (state_read_if_new(ST_SENSOR_DATA, &sdata_net, &ctx->last_sensor_seq)) {
+            t  = sdata_net.temp;
+            hu = sdata_net.hum;
+            sm = sdata_net.smoke_ppm;
+            lu = sdata_net.light_lux;
+            di = sdata_net.distance;
         }
         snprintf(json_buf, sizeof(json_buf),
          "{\\\"id\\\":\\\"1\\\"\\,\\\"version\\\":\\\"1.0\\\"\\,\\\"params\\\":{\\\"temp\\\":%.1f\\,\\\"hum\\\":%.1f\\,\\\"smoke_density\\\":%.1f\\,\\\"LightLux\\\":%.1f\\,\\\"ultrasound_distance\\\":%.2f}}",
@@ -399,11 +399,17 @@ static void on_poll_online(fsm_t* fsm, void* arg) {
     if (ctx->euler_report_en && BSP_MPU6050_IsWorking()) {
         if (FSM_GET_TICK() - last_euler_tx_tick > FSM_MS_TO_TICKS(3000)) {
             last_euler_tx_tick = FSM_GET_TICK();
+            // 从中央状态仓库读取最新 IMU 数据（Motor 单写者写入，无锁 + seq 保证完整）
+            MPU6050_Data_t imu_net;
+            float er = 0.0f, ey = 0.0f, ep = 0.0f;
+            if (state_read_if_new(ST_IMU_DATA, &imu_net, &ctx->last_imu_seq)) {
+                er = imu_net.roll; ey = imu_net.yaw; ep = imu_net.pitch;
+            }
             
             // ֱ�Ӷ�ȡ fsm_motor �и��µ�ȫ�ֱ��������ٷ���Ӳ�� FIFO
             snprintf(json_buf, sizeof(json_buf), 
                 "{\\\"params\\\":{\\\"Euler_angle_Roll\\\":%.1f\\,\\\"Euler_angle_Yaw\\\":%.1f\\,\\\"Euler_angle_Pitch\\\":%.1f}\\,\\\"version\\\":\\\"1.0.0\\\"}",
-                g_imu_data.roll, g_imu_data.yaw, g_imu_data.pitch);
+                er, ey, ep);
                 
 #if ESP8266_TRANSPARENT_MODE
             if (g_esp_mode) {
